@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
+import ImportBriefing from '@/components/ImportBriefing';
 import {
   Select,
   SelectContent,
@@ -35,7 +36,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { previewCSV, commitImport } from '@/lib/api';
+import { previewCSV, commitImport, getLeads } from '@/lib/api';
 import {
   Upload,
   FileText,
@@ -79,6 +80,7 @@ export default function ImportPage() {
   const [source, setSource] = useState('CSV Import');
   const [loading, setLoading] = useState(false);
   const [importResult, setImportResult] = useState(null);
+  const [batchLeads, setBatchLeads] = useState([]);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const handleFileSelect = async (e) => {
@@ -136,6 +138,18 @@ export default function ImportPage() {
     try {
       const result = await commitImport(file, mappings, source);
       setImportResult(result);
+
+      // Fetch the freshly imported leads for the briefing
+      try {
+        const data = await fetch(
+          `${process.env.REACT_APP_BACKEND_URL}/api/leads?import_batch_id=${encodeURIComponent(result.batch_id)}&page_size=200`
+        ).then((r) => r.json());
+        setBatchLeads(data.leads || []);
+      } catch {
+        // If partial fetch fails, briefing falls back to just the stats
+        setBatchLeads([]);
+      }
+
       setStep(3);
       toast.success(`Imported ${result.created} new leads`);
     } catch (err) {
@@ -455,46 +469,26 @@ export default function ImportPage() {
           </motion.div>
         )}
 
-        {/* Step 3: Result */}
+        {/* Step 3: Intelligence Briefing */}
         {step === 3 && importResult && (
           <motion.div
-            key="result"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
+            key="briefing"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
           >
-            <Card className="max-w-2xl mx-auto">
-              <CardContent className="pt-8 pb-6">
-                <div className="text-center">
-                  <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle2 className="w-8 h-8 text-emerald-600" />
-                  </div>
-                  <h2 className="font-display text-2xl font-semibold mb-2">Import Complete</h2>
-                  <p className="text-muted-foreground mb-6">
-                    Your leads have been processed and scored.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <ResultStat label="Total Processed" value={importResult.total_processed} />
-                  <ResultStat label="New Leads Created" value={importResult.created} color="text-emerald-600" />
-                  <ResultStat label="Existing Updated" value={importResult.updated} color="text-sky-600" />
-                  <ResultStat label="Duplicates Skipped" value={importResult.duplicates_skipped} color="text-amber-600" />
-                  <ResultStat label="Incomplete Rows" value={importResult.incomplete} color="text-rose-600" />
-                </div>
-
-                <div className="flex gap-3 justify-center">
-                  <Button variant="outline" onClick={() => { setStep(0); setFile(null); setPreviewData(null); setImportResult(null); }}>
-                    Import Another
-                  </Button>
-                  <Button onClick={() => navigate('/dashboard')}>
-                    Go to Dashboard
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <ImportBriefing
+              importResult={importResult}
+              batchLeads={batchLeads}
+              onImportMore={() => {
+                setStep(0);
+                setFile(null);
+                setPreviewData(null);
+                setImportResult(null);
+                setBatchLeads([]);
+              }}
+            />
           </motion.div>
         )}
       </AnimatePresence>

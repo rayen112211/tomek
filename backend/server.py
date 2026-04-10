@@ -295,6 +295,7 @@ async def commit_import(
 
 @api_router.get("/leads")
 async def get_leads(
+    import_batch_id: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
     icp_fit: Optional[str] = Query(None),
     pipeline_status: Optional[str] = Query(None),
@@ -325,6 +326,8 @@ async def get_leads(
 
     if icp_fit:
         query["icp_fit"] = icp_fit
+    if import_batch_id:
+        query["import_batch_id"] = import_batch_id
     if pipeline_status:
         query["pipeline_status"] = pipeline_status
     if min_score is not None:
@@ -534,8 +537,8 @@ async def export_leads(
         "company_name", "website", "country", "industry", "employee_range",
         "linkedin_company_url", "decision_maker_name", "decision_maker_role",
         "decision_maker_linkedin_url", "email", "email_status",
-        "icp_fit", "score", "pipeline_status", "ai_explanation", "why_this_lead",
-        "growth_signals", "notes", "source"
+        "icp_fit", "score", "pipeline_status", "ai_explanation", "suggested_angle",
+        "why_this_lead", "growth_signals", "notes", "source"
     ]
 
     output = io.StringIO()
@@ -546,6 +549,11 @@ async def export_leads(
         row = {k: lead.get(k, "") for k in csv_columns}
         if isinstance(row.get("growth_signals"), list):
             row["growth_signals"] = ", ".join(row["growth_signals"])
+        # Extract suggested_angle from the end of ai_explanation if it contains "Suggested angle:"
+        explanation = row.get("ai_explanation") or row.get("why_this_lead") or ""
+        if "Suggested angle:" in explanation:
+            row["suggested_angle"] = "Suggested angle:" + explanation.split("Suggested angle:")[-1].strip()
+            row["ai_explanation"] = explanation.split("Suggested angle:")[0].strip()
         writer.writerow(row)
 
     output.seek(0)
@@ -595,6 +603,64 @@ async def recalculate_all_leads():
         updated_count += 1
 
     return {"message": f"Recalculated {updated_count} leads", "count": updated_count}
+
+
+# ============ Weekly Digest ============
+
+@api_router.get("/digest/weekly")
+async def weekly_digest():
+    """Return a structured weekly summary of the pipeline for email digest use."""
+    from datetime import timedelta
+
+    now = datetime.now(timezone.utc)
+    week_ago_str = (now - timedelta(days=7)).isoformat()
+
+    total = await db.leads.count_documents({})
+    new_this_week = await db.leads.count_documents({"created_at": {"$gte": week_ago_str}})
+
+    # Top 5 leads by score
+    top_cursor = db.leads.find({}, {"_id": 0}).sort("score", -1)
+    top_leads_raw = await top_cursor.to_list(length=5)
+    top_leads = [
+        {
+            "company_name": l.get("company_name"),
+            "score": l.get("score"),
+            "icp_fit": l.get("icp_fit"),
+            "pipeline_status": l.get("pipeline_status"),
+            "country": l.get("country"),
+            "industry": l.get("industry"),
+            "decision_maker_name": l.get("decision_maker_name"),
+            "decision_maker_role": l.get("decision_maker_role"),
+            "top_signal": l.get("typed_signals", [{}])[0].get("label", "") if l.get("typed_signals") else "",
+            "ai_explanation": l.get("ai_explanation", ""),
+        }
+        for l in top_leads_raw
+    ]
+
+    # Pipeline status counts
+    pipeline_counts = {}
+    for status in PIPELINE_STATUSES:
+        pipeline_counts[status] = await db.leads.count_documents({"pipeline_status": status})
+
+    # Most common signal type this week
+    recent_cursor = db.leads.find({"created_at": {"$gte": week_ago_str}}, {"_id": 0, "typed_signals": 1})
+    recent_leads = await recent_cursor.to_list(length=1000)
+    signal_counter: dict = {}
+    for lead in recent_leads:
+        for sig in lead.get("typed_signals", []):
+            sig_type = sig.get("type", "unknown")
+            signal_counter[sig_type] = signal_counter.get(sig_type, 0) + 1
+    most_common_signal = max(signal_counter, key=signal_counter.get) if signal_counter else None
+
+    return {
+        "generated_at": now.isoformat(),
+        "total_leads": total,
+        "new_leads_last_7_days": new_this_week,
+        "top_5_leads": top_leads,
+        "pipeline_summary": pipeline_counts,
+        "most_common_signal_this_week": most_common_signal,
+        "signal_breakdown_this_week": signal_counter,
+    }
 
 
 # ============ Mock Enrichment Placeholders ============

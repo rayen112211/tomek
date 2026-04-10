@@ -49,6 +49,7 @@ import {
   XCircle,
   Sparkles,
   Building2,
+  AlertTriangle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -434,7 +435,23 @@ export default function DashboardPage() {
 
                       {/* Score */}
                       <TableCell className="py-2 px-3" onClick={() => handleRowClick(lead)}>
-                        <ScoreBadge score={lead.score || 0} />
+                        <div className="flex items-center gap-2">
+                          <ScoreBadge score={lead.score || 0} />
+                          {lead.score >= 7 && (!lead.email || lead.email_status === 'missing') && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="flex items-center justify-center p-1 bg-red-50 text-red-600 rounded cursor-help">
+                                    <AlertTriangle className="w-4 h-4" />
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="text-xs">No contact email</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                        </div>
                       </TableCell>
 
                       {/* Company */}

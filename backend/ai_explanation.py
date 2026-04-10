@@ -40,6 +40,8 @@ def _build_prompt(lead: dict) -> str:
 
 Write a 2-3 sentence explanation for why this company is a strong consulting prospect right now. Sound like a smart analyst who understands CEE business dynamics — direct, specific, not generic. Focus on what's happening in the business that creates a consulting need. Do not use phrases like "this company is a good lead" or reference the scoring system.
 
+End your response with exactly one sentence starting with "Suggested angle:" followed by a specific, personalized opening line a sales person could use to start an outreach message to this exact decision maker — make it reference their specific role, industry, or a signal you noticed. Do NOT write a generic line like "I'd love to talk about your growth challenges."
+
 Company data:
 - Name: {company}
 - Country: {country}
@@ -50,7 +52,7 @@ Company data:
 - {signal_text}
 {f'- Notes: {notes}' if notes else ''}
 
-Write only the explanation, 2-3 sentences, in English."""
+Write only the explanation (2-3 sentences) followed immediately by the "Suggested angle:" sentence, in English."""
 
     return prompt
 
