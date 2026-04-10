@@ -1,0 +1,107 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 33% 99%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 215 28% 17%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 215 28% 17%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 210 40% 96%;
+    --accent-foreground: 215 28% 17%;
+
+    --border: 214 20% 90%;
+    --input: 214 20% 90%;
+    --ring: 206 90% 40%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 98%;
+
+    --radius: 0.6rem;
+
+    --ink: 215 28% 17%;
+    --ink-2: 215 19% 27%;
+    --canvas: 210 33% 99%;
+    --gridline: 214 20% 92%;
+
+    --fit: 142 71% 35%;
+    --partial: 32 94% 44%;
+    --notfit: 0 72% 51%;
+
+    --score-low: 0 72% 51%;
+    --score-mid: 32 94% 44%;
+    --score-high: 142 71% 35%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+.font-display {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.font-mono {
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+/* Table density */
+.table-comfortable .table-row {
+  @apply h-11;
+}
+
+.table-compact .table-row {
+  @apply h-9 text-[13px];
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+}
+
+/* Score bar animations */
+.score-bar-fill {
+  transition: width 0.4s ease-out;
+}
+
+/* Tabular nums for scores */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
