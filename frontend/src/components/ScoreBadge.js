@@ -42,7 +42,7 @@ export function ScoreBreakdown({ breakdown = {} }) {
     growth_signals: { label: 'Growth Signals', max: 2 },
     email_available: { label: 'Direct Email', max: 1 },
     completeness: { label: 'Profile Completeness', max: 1 },
-    kimatch_bonus: { label: 'KiMatch regional bonus', max: 1 },
+    kimatch_bonus: { label: 'QMatch regional bonus', max: 1 },
   };
 
   return (

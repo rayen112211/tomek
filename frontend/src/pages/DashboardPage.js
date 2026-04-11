@@ -340,7 +340,7 @@ export default function DashboardPage() {
           {total === 0 && !loading && (
             <Button variant="outline" size="sm" className="h-9 gap-2" onClick={handleSeedData} disabled={seeding}>
               {seeding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
-              Load KiMatch Sample Data
+              Load QMatch Sample Data
             </Button>
           )}
         </div>
@@ -375,7 +375,7 @@ export default function DashboardPage() {
                   <SortableHeader field="pipeline_status">Status</SortableHeader>
                 </TableHead>
                 <TableHead className="py-2 px-3 text-xs font-semibold tracking-wide text-slate-500 uppercase">
-                  Why KiMatch
+                  Why QMatch
                 </TableHead>
                 <TableHead className="py-2 px-3 text-xs font-semibold tracking-wide text-slate-500 uppercase">
                   Actions

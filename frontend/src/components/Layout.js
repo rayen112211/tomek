@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Upload, Settings, Target } from 'lucide-react';
+import { LayoutDashboard, Upload, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -16,14 +16,14 @@ export default function Layout() {
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border/60 bg-[#0f172a] shadow-lg">
         <div className="flex h-14 items-center px-4 lg:px-6">
-          {/* KiMatch Brand */}
+          {/* QMatch Brand */}
           <div className="flex items-center gap-2.5 mr-10">
             <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-500 text-white font-bold text-sm shadow-sm">
-              K
+              Q
             </div>
             <div className="flex flex-col leading-none">
               <span className="font-bold text-white text-[15px] tracking-tight">
-                KiMatch
+                QMatch
               </span>
               <span className="text-indigo-300 text-[10px] tracking-widest uppercase font-medium">
                 Lead Intel
@@ -55,11 +55,6 @@ export default function Layout() {
               );
             })}
           </nav>
-
-          {/* Right side tagline */}
-          <div className="ml-auto text-xs text-slate-500 hidden md:block">
-            Built for Konrad · KiMatch Consulting
-          </div>
         </div>
       </header>
 
