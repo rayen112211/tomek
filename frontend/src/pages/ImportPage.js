@@ -36,7 +36,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { previewCSV, commitImport, getLeads } from '@/lib/api';
+import { previewCSV, commitImport, getLeads, seedData } from '@/lib/api';
 import {
   Upload,
   FileText,
@@ -48,6 +48,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   X,
+  Database,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -82,6 +83,40 @@ export default function ImportPage() {
   const [importResult, setImportResult] = useState(null);
   const [batchLeads, setBatchLeads] = useState([]);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+
+  const handleDemoMode = async () => {
+    setLoading(true);
+    try {
+      const result = await seedData();
+      
+      // Simulate "import Result" payload to pass directly to step 3
+      const mockResult = {
+        total_processed: result.count,
+        created: result.count,
+        updated: 0,
+        duplicates_skipped: 0,
+        incomplete: 0,
+        batch_id: 'seed_data',
+      };
+      setImportResult(mockResult);
+
+      try {
+        const data = await fetch(
+          `${process.env.REACT_APP_BACKEND_URL}/api/leads?import_batch_id=seed_data&page_size=200`
+        ).then((r) => r.json());
+        setBatchLeads(data.leads || []);
+      } catch {
+        setBatchLeads([]);
+      }
+
+      setStep(3);
+      toast.success('Demo data loaded successfully');
+    } catch (err) {
+      toast.error('Failed to load demo data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleFileSelect = async (e) => {
     const selectedFile = e.target.files[0];
@@ -250,6 +285,28 @@ export default function ImportPage() {
                     </div>
                   )}
                 </div>
+
+                {!loading && (
+                  <>
+                    <div className="relative my-6">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-background px-2 text-muted-foreground">Or</span>
+                      </div>
+                    </div>
+                    
+                    <Button 
+                      variant="outline" 
+                      onClick={handleDemoMode} 
+                      className="w-full gap-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+                    >
+                      <Database className="w-4 h-4" />
+                      See demo with KiMatch sample data
+                    </Button>
+                  </>
+                )}
 
                 <div className="mt-4">
                   <Label className="text-xs text-muted-foreground">Import Source</Label>

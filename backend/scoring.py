@@ -142,6 +142,10 @@ def calculate_score(lead: dict, icp_settings: dict) -> Tuple[int, Dict[str, int]
     breakdown["kimatch_bonus"] = kimatch_bonus
     score += kimatch_bonus
 
+    # Cap non-target countries to max score of 5
+    if not country_match:
+        score = min(score, 5)
+
     score = min(score, 10)
 
     why = generate_why(lead, score, reasons)

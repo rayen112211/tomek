@@ -14,6 +14,7 @@ import {
   BarChart3,
   Users,
   Sparkles,
+  ExternalLink,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -48,6 +49,16 @@ export default function ImportBriefing({ importResult, batchLeads, onDone, onImp
   // Top 3 leads by score
   const top3 = [...batchLeads].sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 3);
 
+  const riskCount = signalBreakdown['risk'] || 0;
+  const scalingCount = signalBreakdown['scaling'] || 0;
+  
+  let smartHeadline = `${icpFitCount} companies matched KiMatch's ICP and are ready for review.`;
+  if (riskCount > 0) {
+    smartHeadline = `${riskCount} companies are in critical risk — founder carrying full operational load without a COO.`;
+  } else if (scalingCount > 0) {
+    smartHeadline = `${scalingCount} companies are at a scaling inflection point.`;
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -64,8 +75,11 @@ export default function ImportBriefing({ importResult, batchLeads, onDone, onImp
         <h1 className="text-3xl font-bold text-slate-900 mb-2">
           Import Complete — Here's What We Found
         </h1>
-        <p className="text-slate-500 text-base max-w-xl mx-auto">
+        <p className="text-slate-500 text-base max-w-xl mx-auto mb-6">
           {created} companies processed. KiMatch's signal engine has analyzed each one and surfaced the highest-priority targets.
+        </p>
+        <p className="text-lg font-medium text-indigo-700">
+          {smartHeadline}
         </p>
       </div>
 
@@ -172,6 +186,18 @@ export default function ImportBriefing({ importResult, batchLeads, onDone, onImp
                         {suggestedAngle.replace('Suggested angle:', '').trim()}
                       </p>
                     </div>
+                  )}
+
+                  {lead.decision_maker_linkedin_url && (
+                    <a
+                      href={lead.decision_maker_linkedin_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-indigo-600 transition-colors mt-2"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      View on LinkedIn &rarr;
+                    </a>
                   )}
                 </div>
               </motion.div>

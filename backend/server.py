@@ -20,7 +20,7 @@ from dedupe import find_duplicates, merge_lead_data
 from icp import check_icp_fit
 from scoring import calculate_score
 from signal_detection import detect_signals, signals_to_legacy_list
-from ai_explanation import generate_ai_explanation
+from ai_explanation import generate_ai_explanation, generate_template_explanation
 from mock_data import get_mock_leads
 
 ROOT_DIR = Path(__file__).parent
@@ -68,7 +68,7 @@ async def get_icp_settings() -> dict:
     return settings
 
 
-async def process_and_score_lead(lead_dict: dict) -> dict:
+async def process_and_score_lead(lead_dict: dict, skip_ai: bool = False) -> dict:
     """Process a single lead: normalize, detect signals, check ICP, score, generate explanation."""
     # Normalize
     lead_dict = normalize_lead_data(lead_dict)
@@ -92,7 +92,10 @@ async def process_and_score_lead(lead_dict: dict) -> dict:
     lead_dict["why_this_lead"] = why
 
     # Generate AI explanation (Claude or template fallback)
-    ai_explanation = await generate_ai_explanation(lead_dict)
+    if skip_ai:
+        ai_explanation = generate_template_explanation(lead_dict)
+    else:
+        ai_explanation = await generate_ai_explanation(lead_dict)
     lead_dict["ai_explanation"] = ai_explanation
 
     # Set default pipeline status if not set
@@ -735,7 +738,7 @@ async def seed_data():
         lead["import_batch_id"] = "seed_data"
         lead["pipeline_status"] = "New"
 
-        processed = await process_and_score_lead(lead)
+        processed = await process_and_score_lead(lead, skip_ai=True)
         processed_leads.append(processed)
 
     if processed_leads:

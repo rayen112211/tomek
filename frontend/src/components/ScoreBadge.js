@@ -40,8 +40,9 @@ export function ScoreBreakdown({ breakdown = {} }) {
     icp_match: { label: 'ICP Match (Industry, Country, Size)', max: 3 },
     decision_maker: { label: 'Decision Maker Role', max: 2 },
     growth_signals: { label: 'Growth Signals', max: 2 },
-    email_available: { label: 'Direct Email', max: 2 },
+    email_available: { label: 'Direct Email', max: 1 },
     completeness: { label: 'Profile Completeness', max: 1 },
+    kimatch_bonus: { label: 'KiMatch regional bonus', max: 1 },
   };
 
   return (
