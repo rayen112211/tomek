@@ -61,9 +61,9 @@ def detect_signals(lead: dict) -> List[Dict[str, str]]:
 
     emp_count = get_employee_count_from_range(employee_range)
 
-    # 1. SCALING SIGNAL — founder-led company over 50 people
+    # 1. SCALING SIGNAL — founder-led company over 25 people
     is_founder = any(f in role for f in FOUNDER_ROLES)
-    if is_founder and emp_count >= 50:
+    if is_founder and emp_count >= 25:
         signals.append({
             "type": "scaling",
             "label": "Founder-led at growth stage",
@@ -92,7 +92,7 @@ def detect_signals(lead: dict) -> List[Dict[str, str]]:
     # 4. STRUCTURE SIGNAL — manufacturing/logistics/construction without management roles
     structural_industries = {"manufacturing", "logistics", "construction", "distribution", "transportation", "fmcg"}
     if any(ind in industry for ind in structural_industries):
-        if emp_count >= 50 and "structure" not in seen_types:
+        if emp_count >= 25 and "structure" not in seen_types:
             signals.append({
                 "type": "structure",
                 "label": f"{lead.get('industry', 'Industry')} at scale needs strong ops",
@@ -102,7 +102,7 @@ def detect_signals(lead: dict) -> List[Dict[str, str]]:
 
     # 5. RISK SIGNAL — founder-led above 50 with no COO equivalent
     has_coo = any(c in role for c in COO_ROLES)
-    if is_founder and emp_count >= 50 and not has_coo and "risk" not in seen_types:
+    if is_founder and emp_count >= 25 and not has_coo and "risk" not in seen_types:
         signals.append({
             "type": "risk",
             "label": "No COO — founder carrying operational load",
