@@ -33,6 +33,7 @@ import {
   Loader2,
   Sparkles,
   RefreshCw,
+  Linkedin,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -182,7 +183,78 @@ export default function LeadDetailsSheet({ lead, open, onOpenChange, onLeadUpdat
               </div>
             )}
 
-            {/* AI Explanation — the most important field */}
+            {/* Decision Maker Contact Card */}
+            {(formData.decision_maker_name || formData.decision_maker_role || formData.email) && (
+              <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div className="flex items-center gap-3 mb-3">
+                  {/* Initials Avatar */}
+                  <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                    <span className="text-sm font-bold text-indigo-700">
+                      {formData.decision_maker_name
+                        ? formData.decision_maker_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+                        : <User className="w-4 h-4 text-indigo-400" />}
+                    </span>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-slate-800 truncate">
+                      {formData.decision_maker_name || '—'}
+                    </p>
+                    <p className="text-xs text-slate-500 truncate">
+                      {formData.decision_maker_role || 'Role unknown'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  {/* Email */}
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                    {formData.email ? (
+                      <a
+                        href={`mailto:${formData.email}`}
+                        className="text-xs text-indigo-600 hover:underline truncate"
+                      >
+                        {formData.email}
+                      </a>
+                    ) : (
+                      <span className="text-xs text-slate-400 italic">Not available</span>
+                    )}
+                  </div>
+
+                  {/* Decision Maker LinkedIn */}
+                  {formData.decision_maker_linkedin_url && (
+                    <div className="flex items-center gap-2">
+                      <Linkedin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                      <a
+                        href={formData.decision_maker_linkedin_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-indigo-600 hover:underline flex items-center gap-1"
+                      >
+                        View on LinkedIn <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                  )}
+
+                  {/* Company LinkedIn */}
+                  {formData.linkedin_company_url && (
+                    <div className="flex items-center gap-2">
+                      <Building2 className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                      <a
+                        href={formData.linkedin_company_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-indigo-600 hover:underline flex items-center gap-1"
+                      >
+                        Company page <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* AI Explanation */}
             <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-1.5">
