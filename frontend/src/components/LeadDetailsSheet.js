@@ -34,6 +34,7 @@ import {
   Sparkles,
   RefreshCw,
   Linkedin,
+  Phone,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -220,6 +221,19 @@ export default function LeadDetailsSheet({ lead, open, onOpenChange, onLeadUpdat
                       <span className="text-xs text-slate-400 italic">Not available</span>
                     )}
                   </div>
+
+                  {/* Phone */}
+                  {formData.phone && (
+                    <div className="flex items-center gap-2">
+                      <Phone className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                      <a
+                        href={`tel:${formData.phone}`}
+                        className="text-xs text-indigo-600 hover:underline"
+                      >
+                        {formData.phone}
+                      </a>
+                    </div>
+                  )}
 
                   {/* Decision Maker LinkedIn */}
                   {formData.decision_maker_linkedin_url && (

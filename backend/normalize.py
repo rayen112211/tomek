@@ -85,23 +85,35 @@ def normalize_industry(industry: str) -> str:
     aliases = {
         "It": "Technology",
         "Information Technology": "Technology",
+        "Information Technology & Services": "Technology",
         "Tech": "Technology",
         "Software": "Technology",
         "Saas": "SaaS",
         "Finance": "Financial Services",
         "Banking": "Financial Services",
+        "Financial Services": "Financial Services",
         "Health": "Healthcare",
         "Medical": "Healthcare",
         "Pharma": "Healthcare",
         "Ecommerce": "E-commerce",
         "E-Commerce": "E-commerce",
         "Online Retail": "E-commerce",
+        "Consumer Goods": "Retail",
         "Consulting": "Professional Services",
         "Advisory": "Professional Services",
+        "Professional Training & Coaching": "Professional Services",
+        "Legal Services": "Professional Services",
+        "Translation & Localization": "Professional Services",
+        "Staffing & Recruiting": "Professional Services",
         "Education": "Education",
         "Edtech": "Education",
+        "Logistics & Supply Chain": "Logistics",
+        "Packaging & Containers": "Manufacturing",
+        "Food & Beverages": "Food & Beverage",
+        "Wholesale": "Wholesale",
+        "Real Estate": "Real Estate",
     }
-    
+
     return aliases.get(industry, industry)
 
 

@@ -139,18 +139,52 @@ async def preview_csv(file: UploadFile = File(...)):
         internal_fields = [
             "company_name", "website", "country", "industry", "employee_range",
             "linkedin_company_url", "decision_maker_name", "decision_maker_role",
-            "decision_maker_linkedin_url", "email", "email_status",
+            "decision_maker_linkedin_url", "email", "phone", "email_status",
             "growth_signals", "notes", "source"
         ]
 
+        # Apollo-specific exact column-to-field mapping (checked first)
+        apollo_exact = {
+            "Company Name": "company_name",
+            "Website": "website",
+            "Country": "country",
+            "Industry": "industry",
+            "# Employees": "employee_range",
+            "Company Linkedin Url": "linkedin_company_url",
+            "Title": "decision_maker_role",
+            "Email": "email",
+            "Email Status": "email_status",
+            "Person Linkedin Url": "decision_maker_linkedin_url",
+            "Corporate Phone": "phone",
+            "Work Direct Phone": "phone",
+            "Mobile Phone": "phone",
+        }
+        # Build a reverse lookup: internal_field -> csv_col from Apollo exact matches
+        apollo_reverse = {}
+        for col in columns:
+            if col in apollo_exact:
+                field = apollo_exact[col]
+                if field not in apollo_reverse:  # first match wins
+                    apollo_reverse[field] = col
+
+        # Special case: if both "First Name" and "Last Name" are present, map to decision_maker_name
+        has_first = "First Name" in columns
+        has_last = "Last Name" in columns
+        if has_first and has_last:
+            apollo_reverse["decision_maker_name"] = "__first_last__"
+        elif has_first or has_last:
+            apollo_reverse["decision_maker_name"] = "First Name" if has_first else "Last Name"
+
         suggested_mappings = []
         for internal in internal_fields:
-            best_match = None
-            for col in columns:
-                col_lower = col.lower().replace(" ", "_").replace("-", "_")
-                if col_lower == internal:
-                    best_match = col
-                    break
+            best_match = apollo_reverse.get(internal)
+
+            if not best_match:
+                for col in columns:
+                    col_lower = col.lower().replace(" ", "_").replace("-", "_")
+                    if col_lower == internal:
+                        best_match = col
+                        break
 
             if not best_match:
                 keywords = internal.split("_")
@@ -162,14 +196,15 @@ async def preview_csv(file: UploadFile = File(...)):
 
             if not best_match:
                 heuristics = {
-                    "company_name": ["company", "organization", "org", "name"],
+                    "company_name": ["company", "organization", "org"],
                     "website": ["url", "website", "domain", "site"],
                     "email": ["email", "mail", "e-mail"],
-                    "decision_maker_name": ["contact", "person", "first", "full name"],
+                    "decision_maker_name": ["contact", "person", "full name"],
                     "decision_maker_role": ["title", "role", "position", "job"],
-                    "employee_range": ["employees", "size", "headcount", "# employees"],
-                    "linkedin_company_url": ["linkedin", "company linkedin"],
+                    "employee_range": ["employees", "size", "headcount"],
+                    "linkedin_company_url": ["company linkedin"],
                     "decision_maker_linkedin_url": ["person linkedin", "contact linkedin"],
+                    "phone": ["phone", "mobile", "telephone"],
                 }
                 if internal in heuristics:
                     for col in columns:
@@ -178,9 +213,14 @@ async def preview_csv(file: UploadFile = File(...)):
                             best_match = col
                             break
 
+            # For special Apollo first+last token, show a readable placeholder
+            display_match = best_match
+            if best_match == "__first_last__":
+                display_match = "First Name + Last Name"
+
             suggested_mappings.append({
                 "internal_field": internal,
-                "csv_column": best_match or "",
+                "csv_column": display_match or "",
                 "required": internal in ["company_name"]
             })
 
@@ -217,10 +257,30 @@ async def commit_import(
         df = pd.read_csv(io.StringIO(text))
 
         mapping_list = json.loads(mappings)
-        field_map = {}
+        field_map = {}  # csv_col -> internal_field
+        # Track if First Name + Last Name are both mapped to decision_maker_name
+        first_name_col = None
+        last_name_col = None
+        phone_col = None  # first phone column found
         for m in mapping_list:
-            if m.get("csv_column"):
-                field_map[m["csv_column"]] = m["internal_field"]
+            csv_col = m.get("csv_column", "")
+            internal = m.get("internal_field", "")
+            if not csv_col:
+                continue
+            # Handle the readable placeholder from preview
+            if csv_col == "First Name + Last Name":
+                first_name_col = "First Name" if "First Name" in df.columns else None
+                last_name_col = "Last Name" if "Last Name" in df.columns else None
+                continue
+            if csv_col == "First Name" and internal == "decision_maker_name":
+                first_name_col = csv_col
+                continue
+            if csv_col == "Last Name" and internal == "decision_maker_name":
+                last_name_col = csv_col
+                continue
+            if internal == "phone" and phone_col is None:
+                phone_col = csv_col
+            field_map[csv_col] = internal
 
         batch_id = str(uuid.uuid4())
 
@@ -248,6 +308,20 @@ async def commit_import(
                             lead_dict[internal_field] = []
                         else:
                             lead_dict[internal_field] = ""
+
+            # Concatenate First Name + Last Name if both mapped
+            if first_name_col or last_name_col:
+                first = str(row.get(first_name_col, "") or "").strip() if first_name_col and first_name_col in row.index else ""
+                last = str(row.get(last_name_col, "") or "").strip() if last_name_col and last_name_col in row.index else ""
+                combined = " ".join(filter(None, [first, last]))
+                if combined:
+                    lead_dict["decision_maker_name"] = combined
+
+            # Phone field
+            if phone_col and phone_col in row.index:
+                phone_val = row[phone_col]
+                if pd.notna(phone_val):
+                    lead_dict["phone"] = str(phone_val).strip()
 
             leads.append(lead_dict)
 

@@ -28,6 +28,7 @@ class Lead(BaseModel):
     decision_maker_role: str = ""
     decision_maker_linkedin_url: str = ""
     email: str = ""
+    phone: str = ""
     email_status: str = "unverified"  # verified, unverified, missing
     growth_signals: List[str] = Field(default_factory=list)
     typed_signals: List[Dict[str, str]] = Field(default_factory=list)  # [{type, label, icon}]
@@ -58,6 +59,7 @@ class LeadCreate(BaseModel):
     decision_maker_role: str = ""
     decision_maker_linkedin_url: str = ""
     email: str = ""
+    phone: str = ""
     email_status: str = "unverified"
     growth_signals: List[str] = Field(default_factory=list)
     notes: str = ""
@@ -76,6 +78,7 @@ class LeadUpdate(BaseModel):
     decision_maker_role: Optional[str] = None
     decision_maker_linkedin_url: Optional[str] = None
     email: Optional[str] = None
+    phone: Optional[str] = None
     email_status: Optional[str] = None
     growth_signals: Optional[List[str]] = None
     notes: Optional[str] = None
@@ -113,6 +116,8 @@ class ICPSettings(BaseModel):
         "Transportation",
         "Wholesale",
         "Business Services",
+        "Real Estate",
+        "Financial Services",
     ])
     target_employee_min: int = 20
     target_employee_max: int = 500
