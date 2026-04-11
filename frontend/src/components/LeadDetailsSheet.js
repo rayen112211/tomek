@@ -21,11 +21,10 @@ import {
 } from '@/components/ui/select';
 import { ScoreBadge, ScoreBreakdown } from '@/components/ScoreBadge';
 import { ICPBadge, EmailStatusBadge, PipelineStatusBadge, TypedSignalBadge } from '@/components/StatusBadges';
-import { updateLead, enrichEmail, verifyEmail, generateExplanation } from '@/lib/api';
+import { updateLead, generateExplanation } from '@/lib/api';
 import {
   Save,
   Mail,
-  ShieldCheck,
   ExternalLink,
   Building2,
   Globe,
@@ -49,8 +48,6 @@ const PIPELINE_STATUSES = [
 export default function LeadDetailsSheet({ lead, open, onOpenChange, onLeadUpdated }) {
   const [formData, setFormData] = useState({});
   const [saving, setSaving] = useState(false);
-  const [enriching, setEnriching] = useState(false);
-  const [verifying, setVerifying] = useState(false);
   const [generatingExplanation, setGeneratingExplanation] = useState(false);
 
   useEffect(() => {
@@ -96,35 +93,6 @@ export default function LeadDetailsSheet({ lead, open, onOpenChange, onLeadUpdat
     }
   };
 
-  const handleEnrichEmail = async () => {
-    setEnriching(true);
-    try {
-      const result = await enrichEmail(lead.id);
-      toast.success(result.message);
-      if (result.email) {
-        setFormData((prev) => ({ ...prev, email: result.email, email_status: result.status }));
-      }
-      onLeadUpdated?.({ ...formData, email: result.email, email_status: result.status });
-    } catch (err) {
-      toast.error('Failed to enrich email');
-    } finally {
-      setEnriching(false);
-    }
-  };
-
-  const handleVerifyEmail = async () => {
-    setVerifying(true);
-    try {
-      const result = await verifyEmail(lead.id);
-      toast.success(result.message);
-      setFormData((prev) => ({ ...prev, email_status: result.status }));
-      onLeadUpdated?.({ ...formData, email_status: result.status });
-    } catch (err) {
-      toast.error('Failed to verify email');
-    } finally {
-      setVerifying(false);
-    }
-  };
 
   const handleGenerateExplanation = async () => {
     setGeneratingExplanation(true);
@@ -390,29 +358,8 @@ export default function LeadDetailsSheet({ lead, open, onOpenChange, onLeadUpdat
                     <EmailStatusBadge status={formData.email_status} />
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-8 text-xs gap-1.5"
-                    onClick={handleEnrichEmail}
-                    disabled={enriching}
-                    data-testid="lead-details-enrich-email-button"
-                  >
-                    {enriching ? <Loader2 className="w-3 h-3 animate-spin" /> : <Mail className="w-3 h-3" />}
-                    Enrich Email
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-8 text-xs gap-1.5"
-                    onClick={handleVerifyEmail}
-                    disabled={verifying || !formData.email}
-                    data-testid="lead-details-verify-email-button"
-                  >
-                    {verifying ? <Loader2 className="w-3 h-3 animate-spin" /> : <ShieldCheck className="w-3 h-3" />}
-                    Verify Email
-                  </Button>
+                <div className="flex items-center gap-2 mt-1">
+                  <p className="text-xs text-slate-400 italic">Email sourced from Apollo import.</p>
                 </div>
               </div>
             </div>

@@ -398,12 +398,24 @@ export default function DashboardPage() {
                   <TableCell colSpan={8} className="h-48 text-center">
                     <div className="flex flex-col items-center justify-center text-muted-foreground">
                       <Building2 className="w-12 h-12 mb-3 opacity-20" />
-                      <p className="text-base font-medium">No leads found</p>
+                      <p className="text-base font-medium">
+                        {activeFilterCount > 0 ? 'No leads match your filters' : 'No leads yet'}
+                      </p>
                       <p className="text-sm mt-1">
                         {activeFilterCount > 0
                           ? 'Try adjusting your filters'
-                          : 'Import a CSV or load KiMatch sample data to get started'}
+                          : 'Export a CSV from Apollo or Sales Navigator and import it here to get started.'}
                       </p>
+                      {activeFilterCount === 0 && (
+                        <Button
+                          size="sm"
+                          className="mt-4 gap-2 bg-indigo-600 hover:bg-indigo-700 text-white"
+                          onClick={() => navigate('/import')}
+                        >
+                          <Upload className="w-4 h-4" />
+                          Import CSV
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

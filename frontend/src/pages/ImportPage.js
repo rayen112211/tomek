@@ -248,7 +248,7 @@ export default function ImportPage() {
               <CardHeader>
                 <CardTitle className="font-display text-xl">Import Leads from CSV</CardTitle>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Upload a CSV file exported from Apollo, Sales Navigator, or similar tools.
+                  Export your leads from Apollo or Sales Navigator as a CSV, then upload it here. The system will automatically filter, score, and generate AI explanations for each company.
                 </p>
               </CardHeader>
               <CardContent>

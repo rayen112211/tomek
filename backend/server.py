@@ -255,7 +255,6 @@ async def commit_import(
         for lead in leads:
             processed = await process_and_score_lead(lead)
             processed_leads.append(processed)
-
         existing_cursor = db.leads.find({}, {"_id": 0, "dedupe_key": 1, "id": 1})
         existing_docs = await existing_cursor.to_list(length=10000)
         existing_keys = {d["dedupe_key"]: d["id"] for d in existing_docs if d.get("dedupe_key")}
