@@ -328,7 +328,10 @@ async def get_leads(
         ]
 
     if icp_fit:
-        query["icp_fit"] = icp_fit
+        if "," in icp_fit:
+            query["icp_fit"] = {"$in": [v.strip() for v in icp_fit.split(",")]}
+        else:
+            query["icp_fit"] = icp_fit
     if import_batch_id:
         query["import_batch_id"] = import_batch_id
     if pipeline_status:
@@ -519,7 +522,10 @@ async def export_leads(
                 {"email": search_regex},
             ]
         if icp_fit:
-            query["icp_fit"] = icp_fit
+            if "," in icp_fit:
+                query["icp_fit"] = {"$in": [v.strip() for v in icp_fit.split(",")]}
+            else:
+                query["icp_fit"] = icp_fit
         if pipeline_status:
             query["pipeline_status"] = pipeline_status
         if min_score is not None:

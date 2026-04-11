@@ -34,6 +34,13 @@ def calculate_score(lead: dict, icp_settings: dict) -> Tuple[int, Dict[str, int]
     if lead_industry and any(ex in lead_industry or lead_industry in ex for ex in excluded_industries):
         return 0, {}, "Excluded industry"
 
+    cap_size_score = False
+    temp_min = icp_settings.get("target_employee_min", 20)
+    temp_max = icp_settings.get("target_employee_max", 500)
+    temp_emp = get_employee_count_from_range(lead.get("employee_range", ""))
+    if temp_emp > 0 and (temp_emp < temp_min or temp_emp > temp_max):
+        cap_size_score = True
+
     target_countries = [c.lower() for c in icp_settings.get("target_countries", [])]
     target_industries = [i.lower() for i in icp_settings.get("target_industries", [])]
     target_min = icp_settings.get("target_employee_min", 20)
@@ -150,6 +157,9 @@ def calculate_score(lead: dict, icp_settings: dict) -> Tuple[int, Dict[str, int]
     # Cap non-target countries to max score of 5
     if not country_match:
         score = min(score, 5)
+
+    if cap_size_score:
+        score = min(score, 3)
 
     score = min(score, 10)
 
