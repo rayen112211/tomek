@@ -58,7 +58,7 @@ export default function Layout() {
 
           {/* Right side tagline */}
           <div className="ml-auto text-xs text-slate-500 hidden md:block">
-            Build for Konrad · KiMatch Consulting
+            Built for Konrad · KiMatch Consulting
           </div>
         </div>
       </header>

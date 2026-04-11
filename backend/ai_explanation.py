@@ -82,10 +82,10 @@ async def generate_ai_explanation(lead: dict) -> str:
             logger.warning(f"Claude API failed for lead {lead.get('company_name', '?')}: {e}")
 
     # Fallback to improved template
-    return _template_explanation(lead)
+    return generate_template_explanation(lead)
 
 
-def _template_explanation(lead: dict) -> str:
+def generate_template_explanation(lead: dict) -> str:
     """Improved template-based explanation when Claude is unavailable."""
     company = lead.get("company_name", "This company")
     country = lead.get("country", "")

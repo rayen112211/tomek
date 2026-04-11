@@ -29,6 +29,11 @@ def calculate_score(lead: dict, icp_settings: dict) -> Tuple[int, Dict[str, int]
     reasons = []
     score = 0
 
+    lead_industry = (lead.get("industry") or "").lower()
+    excluded_industries = [i.lower() for i in icp_settings.get("excluded_industries", [])]
+    if lead_industry and any(ex in lead_industry or lead_industry in ex for ex in excluded_industries):
+        return 0, {}, "Excluded industry"
+
     target_countries = [c.lower() for c in icp_settings.get("target_countries", [])]
     target_industries = [i.lower() for i in icp_settings.get("target_industries", [])]
     target_min = icp_settings.get("target_employee_min", 20)

@@ -61,7 +61,7 @@ def check_icp_fit(lead: dict, icp_settings: dict) -> Tuple[str, str]:
         if target_min <= emp_count <= target_max:
             matches.append("company_size")
         else:
-            mismatches.append("company_size")
+            return "Not Fit", f"Company size is outside the target {target_min}-{target_max} range."
 
     # ---- Decision Maker Role ----
     target_roles = [r.lower() for r in icp_settings.get("target_decision_maker_roles", [])]

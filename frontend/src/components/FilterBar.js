@@ -45,7 +45,7 @@ export default function FilterBar({
 
   const clearFilters = () => {
     const cleared = {
-      icp_fit: '',
+      icp_fit: 'Fit,Partial Fit',
       pipeline_status: '',
       min_score: 0,
       country: '',
@@ -138,6 +138,7 @@ export default function FilterBar({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="Fit,Partial Fit">Fit & Partial Fit</SelectItem>
                   <SelectItem value="Fit">Fit</SelectItem>
                   <SelectItem value="Partial Fit">Partial Fit</SelectItem>
                   <SelectItem value="Not Fit">Not Fit</SelectItem>
@@ -253,8 +254,8 @@ export default function FilterBar({
             </Badge>
           )}
           {filters.icp_fit && (
-            <Badge variant="secondary" className="gap-1 text-xs h-6">
-              {filters.icp_fit}
+            <Badge variant="secondary" className="gap-1 text-xs h-6 bg-indigo-50 text-indigo-700 border border-indigo-100">
+              {filters.icp_fit === 'Fit,Partial Fit' ? 'Showing: ICP Fit only' : filters.icp_fit}
               <X className="w-3 h-3 cursor-pointer" onClick={() => onFiltersChange({ ...filters, icp_fit: '' })} />
             </Badge>
           )}

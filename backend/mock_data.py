@@ -113,7 +113,7 @@ def get_mock_leads() -> List[dict]:
             "website": "https://piotrowska-serwis.pl",
             "country": "Poland",
             "industry": "Professional Services",
-            "employee_range": "20-50",
+            "employee_range": "51-200",
             "linkedin_company_url": "https://linkedin.com/company/piotrowska-serwis",
             "decision_maker_name": "Joanna Piotrowska",
             "decision_maker_role": "Dyrektor Zarządzający",

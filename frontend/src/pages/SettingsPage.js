@@ -8,6 +8,16 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Slider } from '@/components/ui/slider';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { getICPSettings, updateICPSettings, recalculateLeads } from '@/lib/api';
 import {
   Save,
@@ -29,6 +39,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [recalculating, setRecalculating] = useState(false);
+  const [showRecalculateDialog, setShowRecalculateDialog] = useState(false);
   const [newItem, setNewItem] = useState({});
 
   useEffect(() => {
@@ -128,7 +139,7 @@ export default function SettingsPage() {
             variant="outline"
             size="sm"
             className="h-9 gap-2"
-            onClick={handleRecalculate}
+            onClick={() => setShowRecalculateDialog(true)}
             disabled={recalculating}
           >
             {recalculating ? (
@@ -278,6 +289,27 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Recalculate Confirm Dialog */}
+      <AlertDialog open={showRecalculateDialog} onOpenChange={setShowRecalculateDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Recalculate All Leads</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will recalculate scores and regenerate explanations for all leads. This cannot be undone. Continue?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              setShowRecalculateDialog(false);
+              handleRecalculate();
+            }}>
+              Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

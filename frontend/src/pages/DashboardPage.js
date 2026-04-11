@@ -76,7 +76,7 @@ export default function DashboardPage() {
   const [filterOptions, setFilterOptions] = useState({});
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({
-    icp_fit: '',
+    icp_fit: 'Fit,Partial Fit',
     pipeline_status: '',
     min_score: 0,
     country: '',
