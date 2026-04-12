@@ -274,7 +274,7 @@ export default function LeadDetailsSheet({ lead, open, onOpenChange, onLeadUpdat
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-1.5">
                   <Sparkles className="w-4 h-4 text-indigo-500" />
-                  <h3 className="text-sm font-semibold text-indigo-800">Why KiMatch Should Target This Company</h3>
+                  <h3 className="text-sm font-semibold text-indigo-800">Why QMatch Should Target This Company</h3>
                 </div>
                 <Button
                   size="sm"

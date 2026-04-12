@@ -1,11 +1,11 @@
-# KiMatch Lead Intelligence Engine
+# QMatch Lead Intelligence Engine
 
-Welcome to the **KiMatch Lead Intelligence Engine**, a specialized, purpose-built sales tool designed to help KiMatch Consulting identify, qualify, and target the right businesses for consulting engagements in Poland and the broader CEE region.
+Welcome to the **QMatch Lead Intelligence Engine**, a specialized, purpose-built sales tool designed to help QMatch Consulting identify, qualify, and target the right businesses for consulting engagements in Poland and the broader CEE region.
 
 ## 🎯 The Goal
 The primary objective of this application is to move away from generic lead-scraping and instead **intelligently identify companies experiencing structural debt or scaling inflection points**. 
 
-Instead of just telling a sales rep *who* to contact, the engine tells them **why** this company needs KiMatch right now, filtering out unqualified leads and generating a contextual, AI-driven explanation for the outreach strategy.
+Instead of just telling a sales rep *who* to contact, the engine tells them **why** this company needs QMatch right now, filtering out unqualified leads and generating a contextual, AI-driven explanation for the outreach strategy.
 
 ---
 
@@ -14,7 +14,7 @@ Instead of just telling a sales rep *who* to contact, the engine tells them **wh
 When data enters the system (via CSV import or mock data seeding), it rapidly passes through a 5-step qualification engine:
 
 1. **Normalization & Deduplication**: Cleans up URLs, standardizes company names, and merges duplicate records securely.
-2. **ICP Filtering**: Compares the lead's country, industry, employee count, and decision-maker roles against the KiMatch Ideal Customer Profile.
+2. **ICP Filtering**: Compares the lead's country, industry, employee count, and decision-maker roles against the QMatch Ideal Customer Profile.
 3. **Signal Detection**: Scans the company data for critical business signals (e.g., "Founder-led with 50+ employees but no COO").
 4. **Scoring**: Calculates a priority score out of 10 based on regional proximity, role relevance, and detected risk models.
 5. **AI Synthesis**: Uses Anthropic's Claude 3 AI to read the signals and write a 2-3 sentence brief for the sales team explaining exactly *why* this company is a prime target for a consulting pitch.
@@ -54,7 +54,7 @@ ANTHROPIC_API_KEY=sk-ant-api03-xxxxxxxxx...
 # In production, set this to a real MongoDB URI:
 MONGO_URL=mongodb://localhost:27017
 
-DB_NAME=kimatch_lead_intelligence
+DB_NAME=qmatch_lead_intelligence
 CORS_ORIGINS=http://localhost:3000
 ```
 > *Note: If `ANTHROPIC_API_KEY` is missing, the engine gracefully falls back to a smart, template-based explanation generator based on the detected signals.*
@@ -108,7 +108,7 @@ tomek-main/
 │   │   ├── components/
 │   │   │   ├── LeadDetailsSheet.js # The slide-out panel with AI explanations
 │   │   │   ├── StatusBadges.js     # Color-coded UI badges for pipeline states
-│   │   │   └── Layout.js           # KiMatch branding, header, navigation
+│   │   │   └── Layout.js           # QMatch branding, header, navigation
 │   │   ├── lib/api.js              # Axios configuration for talking to backend
 │   └── package.json          # Node dependencies (React, Tailwind, Radix UI)
 ```

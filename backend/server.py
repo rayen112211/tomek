@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, UploadFile, File, Form, Query, HTTPException
+﻿from fastapi import FastAPI, APIRouter, UploadFile, File, Form, Query, HTTPException
 from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -31,7 +31,7 @@ client = AsyncMongoMockClient()
 db = client[os.environ.get('DB_NAME', 'lead_qualification_engine')]
 
 # Create the main app
-app = FastAPI(title="KiMatch Lead Intelligence API")
+app = FastAPI(title="QMatch Lead Intelligence API")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
@@ -59,7 +59,7 @@ def serialize_doc(doc):
 
 
 async def get_icp_settings() -> dict:
-    """Get ICP settings from database or create KiMatch defaults."""
+    """Get ICP settings from database or create QMatch defaults."""
     settings = await db.icp_settings.find_one({"id": "icp_settings_default"}, {"_id": 0})
     if not settings:
         defaults = ICPSettings()
@@ -111,7 +111,7 @@ async def process_and_score_lead(lead_dict: dict, skip_ai: bool = False) -> dict
 
 @api_router.get("/")
 async def root():
-    return {"message": "KiMatch Lead Intelligence API"}
+    return {"message": "QMatch Lead Intelligence API"}
 
 
 # ============ CSV Import Endpoints ============
@@ -477,7 +477,7 @@ async def get_leads(
 
 @api_router.get("/leads/stats")
 async def get_lead_stats():
-    """Get lead statistics for KiMatch dashboard."""
+    """Get lead statistics for QMatch dashboard."""
     total = await db.leads.count_documents({})
     fit_count = await db.leads.count_documents({"icp_fit": "Fit"})
     partial_count = await db.leads.count_documents({"icp_fit": "Partial Fit"})
@@ -664,7 +664,7 @@ async def export_leads(
     return StreamingResponse(
         io.BytesIO(output.getvalue().encode('utf-8-sig')),
         media_type="text/csv",
-        headers={"Content-Disposition": f"attachment; filename=kimatch_leads_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"}
+        headers={"Content-Disposition": f"attachment; filename=QMatch_leads_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"}
     )
 
 
@@ -821,7 +821,7 @@ async def mock_verify_email(lead_id: str):
 
 @api_router.post("/admin/seed")
 async def seed_data():
-    """Seed the database with KiMatch mock data and default ICP settings."""
+    """Seed the database with QMatch mock data and default ICP settings."""
     count = await db.leads.count_documents({})
     if count > 0:
         return {"message": f"Database already has {count} leads. Use /admin/seed/force to reseed.", "count": count}
@@ -844,7 +844,7 @@ async def seed_data():
     if processed_leads:
         await db.leads.insert_many(processed_leads)
 
-    return {"message": f"Seeded {len(processed_leads)} KiMatch leads", "count": len(processed_leads)}
+    return {"message": f"Seeded {len(processed_leads)} QMatch leads", "count": len(processed_leads)}
 
 
 @api_router.post("/admin/seed/force")

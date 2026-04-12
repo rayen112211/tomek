@@ -1,4 +1,4 @@
-from typing import Dict, Tuple, List
+﻿from typing import Dict, Tuple, List
 from normalize import get_employee_count_from_range
 
 # CEE countries get a regional bonus
@@ -14,7 +14,7 @@ POLISH_FOUNDER_ROLES = {"prezes", "właściciel", "współwłaściciel", "prezes
 
 def calculate_score(lead: dict, icp_settings: dict) -> Tuple[int, Dict[str, int], str]:
     """
-    Calculate KiMatch lead score out of 10.
+    Calculate QMatch lead score out of 10.
     Returns (score, breakdown, why_this_lead)
 
     Scoring:
@@ -23,7 +23,7 @@ def calculate_score(lead: dict, icp_settings: dict) -> Tuple[int, Dict[str, int]
     +2 Growth / risk signals detected
     +1 Direct email available
     +1 Complete company profile
-    +1 KiMatch bonus (Polish company or founder-led at risk signal stage)
+    +1 QMatch bonus (Polish company or founder-led at risk signal stage)
     """
     breakdown = {}
     reasons = []
@@ -35,7 +35,7 @@ def calculate_score(lead: dict, icp_settings: dict) -> Tuple[int, Dict[str, int]
         return 0, {}, "Excluded industry"
 
     cap_size_score = False
-    temp_min = icp_settings.get("target_employee_min", 20)
+    temp_min = icp_settings.get("target_employee_min", 10)
     temp_max = icp_settings.get("target_employee_max", 500)
     temp_emp = get_employee_count_from_range(lead.get("employee_range", ""))
     if temp_emp > 0 and (temp_emp < temp_min or temp_emp > temp_max):
@@ -43,7 +43,7 @@ def calculate_score(lead: dict, icp_settings: dict) -> Tuple[int, Dict[str, int]
 
     target_countries = [c.lower() for c in icp_settings.get("target_countries", [])]
     target_industries = [i.lower() for i in icp_settings.get("target_industries", [])]
-    target_min = icp_settings.get("target_employee_min", 20)
+    target_min = icp_settings.get("target_employee_min", 10)
     target_max = icp_settings.get("target_employee_max", 500)
 
     lead_country = (lead.get("country") or "").lower()
@@ -59,18 +59,18 @@ def calculate_score(lead: dict, icp_settings: dict) -> Tuple[int, Dict[str, int]
     matches = sum([country_match, industry_match, size_match])
     if matches == 3:
         icp_score = 3
-        reasons.append("Matches KiMatch ICP on industry, region, and company size")
+        reasons.append("Matches QMatch ICP on industry, region, and company size")
     elif matches == 2:
         icp_score = 2
         parts = []
         if country_match: parts.append("CEE region")
         if industry_match: parts.append("target industry")
         if size_match: parts.append("right size")
-        reasons.append(f"Matches KiMatch ICP on {' and '.join(parts)}")
+        reasons.append(f"Matches QMatch ICP on {' and '.join(parts)}")
     elif matches == 1:
         icp_score = 1
         if country_match: reasons.append("Company is in the CEE target region")
-        if industry_match: reasons.append(f"{lead.get('industry', '')} is a KiMatch target industry")
+        if industry_match: reasons.append(f"{lead.get('industry', '')} is a QMatch target industry")
         if size_match: reasons.append("Company size is in the target range")
 
     breakdown["icp_match"] = icp_score
@@ -95,7 +95,7 @@ def calculate_score(lead: dict, icp_settings: dict) -> Tuple[int, Dict[str, int]
     else:
         breakdown["decision_maker"] = 0
         if lead_role:
-            reasons.append(f"Role '{lead.get('decision_maker_role', '')}' is not a primary KiMatch target")
+            reasons.append(f"Role '{lead.get('decision_maker_role', '')}' is not a primary QMatch target")
 
     # ---- Growth / Risk Signals (max +2) ----
     typed_signals = lead.get("typed_signals", [])
@@ -110,7 +110,7 @@ def calculate_score(lead: dict, icp_settings: dict) -> Tuple[int, Dict[str, int]
         if "risk" in signal_types:
             reasons.append("Risk signal: founder carrying operational load without COO")
         elif "scaling" in signal_types and "structure" in signal_types:
-            reasons.append("Scaling + structure signals — classic KiMatch engagement trigger")
+            reasons.append("Scaling + structure signals — classic QMatch engagement trigger")
         elif "scaling" in signal_types:
             reasons.append("Company at scaling inflection point")
         elif "structure" in signal_types:
@@ -142,17 +142,25 @@ def calculate_score(lead: dict, icp_settings: dict) -> Tuple[int, Dict[str, int]
     else:
         breakdown["completeness"] = 0
 
-    # ---- KiMatch Bonus (+1) — Poland or founder-led risk ----
-    kimatch_bonus = 0
+    # ---- QMatch Bonus (+1) — Poland or founder-led risk ----
+    QMatch_bonus = 0
     if lead_country == "poland" or lead_country == "polska":
-        kimatch_bonus = 1
-        reasons.append("Polish company — core KiMatch market")
+        QMatch_bonus = 1
+        reasons.append("Polish company — core QMatch market")
     elif "risk" in signal_types and is_high_value_dm:
-        kimatch_bonus = 1
+        QMatch_bonus = 1
         reasons.append("High-value decision maker with structural risk signal")
 
-    breakdown["kimatch_bonus"] = kimatch_bonus
-    score += kimatch_bonus
+    breakdown["QMatch_bonus"] = QMatch_bonus
+    score += QMatch_bonus
+
+    # ---- QMatch Perfect Client Bonus (+1) — owner/founder with 10+ employees and risk signal ----
+    qmatch_perfect_roles = {"właściciel", "prezes", "founder", "owner", "co-founder", "president"}
+    is_owner_role = any(r in lead_role for r in qmatch_perfect_roles)
+    if is_owner_role and emp_count >= 10 and "risk" in signal_types:
+        breakdown["qmatch_perfect"] = 1
+        score += 1
+        reasons.append("Owner-managed company at scale — perfect Pułapka Firmy Właścicielskiej profile")
 
     # Cap non-target countries to max score of 5
     if not country_match:
@@ -180,7 +188,7 @@ def generate_why(lead: dict, score: int, reasons: List[str]) -> str:
     else:
         quality = "a low-priority"
 
-    parts = [f"{company} is {quality} KiMatch prospect."]
+    parts = [f"{company} is {quality} QMatch prospect."]
 
     if reasons:
         top = reasons[:3]

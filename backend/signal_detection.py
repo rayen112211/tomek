@@ -1,5 +1,5 @@
-"""
-Real growth signal detection for KiMatch Lead Qualification Engine.
+﻿"""
+Real growth signal detection for QMatch Lead Qualification Engine.
 Analyzes available lead data fields to surface meaningful signals
 that indicate why a company might need consulting help right now.
 """
@@ -71,7 +71,7 @@ def detect_signals(lead: dict) -> List[Dict[str, str]]:
         })
         seen_types.add("scaling")
 
-    # 2. SCALING SIGNAL — large employee count relative to typical KiMatch target
+    # 2. SCALING SIGNAL — large employee count relative to typical QMatch target
     if emp_count >= 150 and "scaling" not in seen_types:
         signals.append({
             "type": "scaling",
@@ -105,7 +105,7 @@ def detect_signals(lead: dict) -> List[Dict[str, str]]:
     if is_founder and emp_count >= 25 and not has_coo and "risk" not in seen_types:
         signals.append({
             "type": "risk",
-            "label": "No COO — founder carrying operational load",
+            "label": "Owner dependency — classic Pułapka signal",
             "icon": "alert-triangle",
         })
         seen_types.add("risk")

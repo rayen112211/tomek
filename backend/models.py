@@ -104,22 +104,23 @@ class ICPSettings(BaseModel):
         "Lithuania",
     ])
     target_industries: List[str] = Field(default_factory=lambda: [
+        "Construction",
         "Manufacturing",
         "Logistics",
-        "Retail",
-        "Construction",
-        "Professional Services",
-        "FMCG",
-        "E-commerce",
-        "Distribution",
-        "Food & Beverage",
         "Transportation",
+        "Distribution",
         "Wholesale",
-        "Business Services",
+        "Professional Services",
         "Real Estate",
+        "FMCG",
+        "Food & Beverage",
+        "Business Services",
         "Financial Services",
+        "Retail",
+        "Technology",
+        "E-commerce",
     ])
-    target_employee_min: int = 20
+    target_employee_min: int = 10
     target_employee_max: int = 500
     target_decision_maker_roles: List[str] = Field(default_factory=lambda: [
         # English

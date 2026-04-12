@@ -80,7 +80,7 @@ export function GrowthSignalBadges({ signals, maxShow = 3 }) {
   );
 }
 
-// Pipeline status badge — the core new component for KiMatch
+// Pipeline status badge — the core new component for QMatch
 export function PipelineStatusBadge({ status, size = 'sm' }) {
   const config = {
     'New': {

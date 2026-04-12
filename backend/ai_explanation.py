@@ -1,5 +1,5 @@
-"""
-Claude AI-powered lead explanation generator for KiMatch.
+﻿"""
+Claude AI-powered lead explanation generator for QMatch.
 Falls back to an improved template if no API key is available.
 """
 import os
@@ -36,11 +36,11 @@ def _build_prompt(lead: dict) -> str:
     elif role:
         dm_text = f"Decision maker role: {role}."
 
-    prompt = f"""You are a senior business analyst for KiMatch Consulting, a Polish consulting firm that helps companies either build organizational structure or fix growth problems.
+    prompt = f"""You are a senior business analyst for QMatch Consulting, a Polish consulting firm that helps owner-managed companies escape the Pułapka Firmy Właścicielskiej — the Owner's Company Trap. This is when a founder runs everything himself, cannot delegate, his team is not independent, and company growth is blocked by his personal bottleneck. QMatch works with founders and owners of 10-300 employee companies in Poland and CEE.
 
-Write a 2-3 sentence explanation for why this company is a strong consulting prospect right now. Sound like a smart analyst who understands CEE business dynamics — direct, specific, not generic. Focus on what's happening in the business that creates a consulting need. Do not use phrases like "this company is a good lead" or reference the scoring system.
+Write a 2-3 sentence explanation of why this specific company is likely caught in the Owner's Company Trap right now and why QMatch should reach out. Be specific to their industry and size. Do not use generic phrases.
 
-End your response with exactly one sentence starting with "Suggested angle:" followed by a specific, personalized opening line a sales person could use to start an outreach message to this exact decision maker — make it reference their specific role, industry, or a signal you noticed. Do NOT write a generic line like "I'd love to talk about your growth challenges."
+End with one sentence starting with 'Suggested angle:' that gives the sales person a specific, non-generic opening line referencing something real about this company — their industry, their size, their growth situation, or a specific pain point typical for owner-managed companies at their stage.
 
 Company data:
 - Name: {company}
@@ -115,29 +115,34 @@ def generate_template_explanation(lead: dict) -> str:
     # Signal-based insight
     if "risk" in signal_types:
         parts.append(
-            f"The {role.lower() or 'founder'} appears to be carrying all operational responsibility "
-            f"without a dedicated operations leader — a classic signal of growing structural debt."
+            f"Classic Pułapka Firmy Właścicielskiej pattern — {company} has {emp_range} employees "
+            f"but the {role.lower() or 'owner'} appears to be carrying full operational responsibility "
+            "without a management layer. This is exactly the situation QMatch helps resolve."
         )
     elif "scaling" in signal_types and "structure" in signal_types:
         parts.append(
             "The company is at the inflection point where headcount growth without matching structure "
-            "creates operational risk — exactly where KiMatch adds the most value."
+            "creates deep structural debt — exactly the stage where owner dependency becomes the ceiling, "
+            "and where QMatch adds the most value."
         )
     elif "scaling" in signal_types:
         parts.append(
-            f"At this stage of growth, companies like {company} typically struggle with formalizing "
-            "management layers and sustaining culture — a consulting engagement could de-risk the next phase."
+            f"At this stage of growth, companies like {company} typically struggle to delegate "
+            "and formalize management layers — the founder ends up doing everything, "
+            "and growth stalls. A consulting engagement could de-risk the next phase."
         )
     elif "structure" in signal_types:
         parts.append(
-            "The operational complexity of their industry at this size typically reveals gaps in process, "
-            "management structure, or cross-team coordination."
+            "The operational complexity at this size typically reveals owner dependency and "
+            "gaps in process, management structure, or cross-team coordination — "
+            "classic conditions where QMatch's systems-building approach fits."
         )
     elif signal_labels:
         parts.append(signal_labels[0] + ".")
     else:
         parts.append(
-            "The company profile matches KiMatch's core ICP for organizational development consulting."
+            "The company profile matches QMatch's core ICP: an owner-managed business at the "
+            "size where structural debt and founder dependency start to visibly limit growth."
         )
 
     # Decision maker closer

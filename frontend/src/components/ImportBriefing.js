@@ -52,9 +52,9 @@ export default function ImportBriefing({ importResult, batchLeads, onDone, onImp
   const riskCount = signalBreakdown['risk'] || 0;
   const scalingCount = signalBreakdown['scaling'] || 0;
   
-  let smartHeadline = `${icpFitCount} companies matched KiMatch's ICP and are ready for review.`;
+  let smartHeadline = `${icpFitCount} companies matched QMatch's ICP and are ready for review.`;
   if (riskCount > 0) {
-    smartHeadline = `${riskCount} companies are in critical risk — founder carrying full operational load without a COO.`;
+    smartHeadline = `${riskCount} ${riskCount === 1 ? 'company shows' : 'companies show'} Owner's Trap signals — founder carrying full operational load without a management layer.`;
   } else if (scalingCount > 0) {
     smartHeadline = `${scalingCount} companies are at a scaling inflection point.`;
   }
@@ -76,7 +76,7 @@ export default function ImportBriefing({ importResult, batchLeads, onDone, onImp
           Import Complete — Here's What We Found
         </h1>
         <p className="text-slate-500 text-base max-w-xl mx-auto mb-6">
-          {created} companies processed. KiMatch's signal engine has analyzed each one and surfaced the highest-priority targets.
+          {created} companies processed. QMatch's signal engine has analyzed each one and surfaced the highest-priority targets.
         </p>
         <p className="text-lg font-medium text-indigo-700">
           {smartHeadline}

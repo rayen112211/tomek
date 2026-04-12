@@ -1,6 +1,6 @@
-"""
-KiMatch-relevant mock data — CEE companies in target industries.
-Polish/Czech/Romanian/Slovak/Hungarian businesses that match KiMatch's ICP.
+﻿"""
+QMatch-relevant mock data — CEE companies in target industries.
+Polish/Czech/Romanian/Slovak/Hungarian businesses that match QMatch's ICP.
 """
 import random
 import hashlib
@@ -21,7 +21,7 @@ def generate_mock_signals(company_name: str) -> List[str]:
 
 
 def get_mock_leads() -> List[dict]:
-    """Generate ~30 KiMatch-relevant mock leads for CEE region."""
+    """Generate ~30 QMatch-relevant mock leads for CEE region."""
     leads = [
         # ============ POLAND ============
         {
