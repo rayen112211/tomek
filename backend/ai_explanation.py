@@ -36,7 +36,7 @@ def _build_prompt(lead: dict) -> str:
     elif role:
         dm_text = f"Decision maker role: {role}."
 
-    prompt = f"""You are a senior business analyst for QMatch Consulting, a Polish consulting firm that helps companies either build organizational structure or fix growth problems.
+    prompt = f"""You are a senior business analyst for KiMatch Consulting, a Polish consulting firm that helps companies either build organizational structure or fix growth problems.
 
 Write a 2-3 sentence explanation for why this company is a strong consulting prospect right now. Sound like a smart analyst who understands CEE business dynamics — direct, specific, not generic. Focus on what's happening in the business that creates a consulting need. Do not use phrases like "this company is a good lead" or reference the scoring system.
 
@@ -121,7 +121,7 @@ def generate_template_explanation(lead: dict) -> str:
     elif "scaling" in signal_types and "structure" in signal_types:
         parts.append(
             "The company is at the inflection point where headcount growth without matching structure "
-            "creates operational risk — exactly where QMatch adds the most value."
+            "creates operational risk — exactly where KiMatch adds the most value."
         )
     elif "scaling" in signal_types:
         parts.append(
@@ -137,7 +137,7 @@ def generate_template_explanation(lead: dict) -> str:
         parts.append(signal_labels[0] + ".")
     else:
         parts.append(
-            "The company profile matches QMatch's core ICP for organizational development consulting."
+            "The company profile matches KiMatch's core ICP for organizational development consulting."
         )
 
     # Decision maker closer

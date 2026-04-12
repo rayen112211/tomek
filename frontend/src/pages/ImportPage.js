@@ -303,7 +303,7 @@ export default function ImportPage() {
                       className="w-full gap-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50"
                     >
                       <Database className="w-4 h-4" />
-                      See demo with QMatch sample data
+                      See demo with KiMatch sample data
                     </Button>
                   </>
                 )}

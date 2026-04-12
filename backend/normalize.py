@@ -92,6 +92,9 @@ def normalize_industry(industry: str) -> str:
         "Finance": "Financial Services",
         "Banking": "Financial Services",
         "Financial Services": "Financial Services",
+        "Accounting": "Professional Services",
+        "Management Consulting": "Professional Services",
+        "Human Resources": "Professional Services",
         "Health": "Healthcare",
         "Medical": "Healthcare",
         "Pharma": "Healthcare",
@@ -99,6 +102,7 @@ def normalize_industry(industry: str) -> str:
         "E-Commerce": "E-commerce",
         "Online Retail": "E-commerce",
         "Consumer Goods": "Retail",
+        "Apparel & Fashion": "Retail",
         "Consulting": "Professional Services",
         "Advisory": "Professional Services",
         "Professional Training & Coaching": "Professional Services",
@@ -108,8 +112,14 @@ def normalize_industry(industry: str) -> str:
         "Education": "Education",
         "Edtech": "Education",
         "Logistics & Supply Chain": "Logistics",
+        "Transportation/Trucking/Railroad": "Transportation",
+        "Trucking": "Transportation",
         "Packaging & Containers": "Manufacturing",
+        "Industrial Automation": "Manufacturing",
+        "Mechanical Or Industrial Engineering": "Manufacturing",
         "Food & Beverages": "Food & Beverage",
+        "Food Production": "Food & Beverage",
+        "Import And Export": "Distribution",
         "Wholesale": "Wholesale",
         "Real Estate": "Real Estate",
     }
@@ -195,6 +205,18 @@ def normalize_role(role: str) -> str:
     return aliases.get(role, role)
 
 
+def normalize_phone(phone: str) -> str:
+    """Normalize phone number — strip Apollo apostrophe prefix and whitespace."""
+    if not phone:
+        return ""
+    phone = str(phone).strip()
+    # Apollo sometimes prefixes numbers with a leading apostrophe to prevent
+    # Excel from interpreting them as numbers, e.g. '+48 123 456 789
+    if phone.startswith("'"):
+        phone = phone[1:].strip()
+    return phone
+
+
 def check_completeness(lead_dict: dict) -> List[str]:
     """Check for incomplete/missing fields and return list of flags."""
     flags = []
@@ -229,6 +251,7 @@ def normalize_lead_data(lead_dict: dict) -> dict:
     lead_dict["decision_maker_role"] = normalize_role(lead_dict.get("decision_maker_role", ""))
     lead_dict["linkedin_company_url"] = normalize_url(lead_dict.get("linkedin_company_url", ""))
     lead_dict["decision_maker_linkedin_url"] = normalize_url(lead_dict.get("decision_maker_linkedin_url", ""))
+    lead_dict["phone"] = normalize_phone(lead_dict.get("phone", ""))
     
     # Normalize company name
     if lead_dict.get("company_name"):

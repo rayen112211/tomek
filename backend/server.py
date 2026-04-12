@@ -160,11 +160,18 @@ async def preview_csv(file: UploadFile = File(...)):
             "Mobile Phone": "phone",
         }
         # Build a reverse lookup: internal_field -> csv_col from Apollo exact matches
+        # For phone: prefer Corporate Phone > Work Direct Phone > Mobile Phone
+        PHONE_PRIORITY = ["Work Direct Phone", "Corporate Phone", "Mobile Phone"]
         apollo_reverse = {}
         for col in columns:
             if col in apollo_exact:
                 field = apollo_exact[col]
-                if field not in apollo_reverse:  # first match wins
+                if field == "phone":
+                    # Lower index = higher priority
+                    current = apollo_reverse.get("phone")
+                    if current is None or PHONE_PRIORITY.index(col) < PHONE_PRIORITY.index(current):
+                        apollo_reverse["phone"] = col
+                elif field not in apollo_reverse:
                     apollo_reverse[field] = col
 
         # Special case: if both "First Name" and "Last Name" are present, map to decision_maker_name
@@ -261,7 +268,8 @@ async def commit_import(
         # Track if First Name + Last Name are both mapped to decision_maker_name
         first_name_col = None
         last_name_col = None
-        phone_col = None  # first phone column found
+        # Track all phone columns mapped, in the order they appear
+        phone_cols = []  # ordered list of csv columns mapped to phone
         for m in mapping_list:
             csv_col = m.get("csv_column", "")
             internal = m.get("internal_field", "")
@@ -278,9 +286,16 @@ async def commit_import(
             if csv_col == "Last Name" and internal == "decision_maker_name":
                 last_name_col = csv_col
                 continue
-            if internal == "phone" and phone_col is None:
-                phone_col = csv_col
+            if internal == "phone":
+                phone_cols.append(csv_col)
+                # Don't add to field_map — we handle phone separately below
+                continue
             field_map[csv_col] = internal
+
+        # Apollo phone priority: Work Direct Phone > Corporate Phone > Mobile Phone
+        PHONE_PRIORITY_ORDER = ["Work Direct Phone", "Corporate Phone", "Mobile Phone"]
+        # Sort phone_cols by priority, unknowns go at the end
+        phone_cols.sort(key=lambda c: PHONE_PRIORITY_ORDER.index(c) if c in PHONE_PRIORITY_ORDER else 99)
 
         batch_id = str(uuid.uuid4())
 
@@ -317,11 +332,17 @@ async def commit_import(
                 if combined:
                     lead_dict["decision_maker_name"] = combined
 
-            # Phone field
-            if phone_col and phone_col in row.index:
-                phone_val = row[phone_col]
-                if pd.notna(phone_val):
-                    lead_dict["phone"] = str(phone_val).strip()
+            # Phone field — try each phone column in priority order, use first non-empty value
+            for pcol in phone_cols:
+                if pcol in row.index:
+                    pval = row[pcol]
+                    if pd.notna(pval) and str(pval).strip().strip("'"):
+                        raw = str(pval).strip()
+                        # Strip leading apostrophe Apollo uses to protect phone formatting
+                        if raw.startswith("'"):
+                            raw = raw[1:].strip()
+                        lead_dict["phone"] = raw
+                        break  # stop at first non-empty phone
 
             leads.append(lead_dict)
 
@@ -618,7 +639,7 @@ async def export_leads(
     csv_columns = [
         "company_name", "website", "country", "industry", "employee_range",
         "linkedin_company_url", "decision_maker_name", "decision_maker_role",
-        "decision_maker_linkedin_url", "email", "email_status",
+        "decision_maker_linkedin_url", "email", "phone", "email_status",
         "icp_fit", "score", "pipeline_status", "ai_explanation", "suggested_angle",
         "why_this_lead", "growth_signals", "notes", "source"
     ]

@@ -46,7 +46,7 @@ def check_icp_fit(lead: dict, icp_settings: dict) -> Tuple[str, str]:
 
     if lead_industry:
         if any(ex in lead_industry or lead_industry in ex for ex in excluded_industries):
-            return "Not Fit", f"Industry '{lead.get('industry')}' is excluded from QMatch ICP."
+            return "Not Fit", f"Industry '{lead.get('industry')}' is excluded from KiMatch ICP."
         if any(t in lead_industry or lead_industry in t for t in target_industries):
             matches.append("industry")
         else:
@@ -80,7 +80,7 @@ def check_icp_fit(lead: dict, icp_settings: dict) -> Tuple[str, str]:
     total_criteria = len(matches) + len(mismatches)
 
     if total_criteria == 0:
-        return "Partial Fit", "Insufficient data to determine QMatch ICP fit."
+        return "Partial Fit", "Insufficient data to determine KiMatch ICP fit."
 
     match_ratio = len(matches) / total_criteria
 
@@ -96,7 +96,7 @@ def check_icp_fit(lead: dict, icp_settings: dict) -> Tuple[str, str]:
     if "country" in matches:
         parts.append(f"{lead.get('country', '')} is in the target CEE region")
     if "industry" in matches:
-        parts.append(f"{lead.get('industry', '')} is a QMatch target industry")
+        parts.append(f"{lead.get('industry', '')} is a KiMatch target industry")
     if "company_size" in matches:
         parts.append(f"company size ({lead.get('employee_range', '')}) fits the 20–500 range")
     if "decision_maker_role" in matches:
