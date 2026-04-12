@@ -50,6 +50,9 @@ import {
   Sparkles,
   Building2,
   AlertTriangle,
+  Mail,
+  Phone,
+  Linkedin,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -469,10 +472,13 @@ export default function DashboardPage() {
                       {/* Company */}
                       <TableCell className="py-2 px-3 cursor-pointer" onClick={() => handleRowClick(lead)}>
                         <div>
-                          <div className="font-semibold text-sm max-w-[160px] truncate text-slate-800">
-                            {lead.company_name || 'Unnamed'}
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-semibold text-sm max-w-[150px] truncate text-slate-800">
+                              {lead.company_name || 'Unnamed'}
+                            </span>
+                            <ICPBadge fit={lead.icp_fit} size="xs" />
                           </div>
-                          <div className="text-xs text-slate-400 truncate max-w-[160px]">
+                          <div className="text-xs text-slate-400 truncate max-w-[160px] mt-0.5">
                             {lead.country}{lead.industry ? ` · ${lead.industry}` : ''}
                           </div>
                         </div>
@@ -480,12 +486,44 @@ export default function DashboardPage() {
 
                       {/* Decision Maker */}
                       <TableCell className="py-2 px-3" onClick={() => handleRowClick(lead)}>
-                        <div className="max-w-[150px]">
+                        <div className="max-w-[170px]">
                           <div className="text-sm font-medium truncate text-slate-700">
                             {lead.decision_maker_name || '—'}
                           </div>
-                          <div className="text-xs text-slate-400 truncate">
+                          <div className="text-xs text-slate-400 truncate mb-1">
                             {lead.decision_maker_role || ''}
+                          </div>
+                          {/* Quick contact icons */}
+                          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                            {lead.email && (
+                              <a
+                                href={`mailto:${lead.email}`}
+                                title={lead.email}
+                                className="text-slate-400 hover:text-indigo-600 transition-colors"
+                              >
+                                <Mail className="w-3.5 h-3.5" />
+                              </a>
+                            )}
+                            {lead.phone && (
+                              <a
+                                href={`tel:${lead.phone}`}
+                                title={lead.phone}
+                                className="text-slate-400 hover:text-indigo-600 transition-colors"
+                              >
+                                <Phone className="w-3.5 h-3.5" />
+                              </a>
+                            )}
+                            {lead.decision_maker_linkedin_url && (
+                              <a
+                                href={lead.decision_maker_linkedin_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="LinkedIn profile"
+                                className="text-slate-400 hover:text-indigo-600 transition-colors"
+                              >
+                                <Linkedin className="w-3.5 h-3.5" />
+                              </a>
+                            )}
                           </div>
                         </div>
                       </TableCell>

@@ -1,12 +1,27 @@
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
-export function ICPBadge({ fit }) {
+export function ICPBadge({ fit, size = 'sm' }) {
   const config = {
     Fit: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-50',
     'Partial Fit': 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-50',
     'Not Fit': 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-50',
   };
+
+  // xs size: just a small colored dot, no text — for inline table use
+  if (size === 'xs') {
+    const dotColor = {
+      Fit: 'bg-emerald-500',
+      'Partial Fit': 'bg-amber-400',
+      'Not Fit': 'bg-rose-400',
+    }[fit] || 'bg-rose-400';
+    return (
+      <span
+        className={cn('inline-block w-2 h-2 rounded-full flex-shrink-0', dotColor)}
+        title={fit || 'Not Fit'}
+      />
+    );
+  }
 
   return (
     <Badge

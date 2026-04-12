@@ -78,6 +78,7 @@ export default function LeadDetailsSheet({ lead, open, onOpenChange, onLeadUpdat
         decision_maker_role: formData.decision_maker_role,
         decision_maker_linkedin_url: formData.decision_maker_linkedin_url,
         email: formData.email,
+        phone: formData.phone,
         email_status: formData.email_status,
         growth_signals: formData.growth_signals,
         notes: formData.notes,
@@ -290,11 +291,27 @@ export default function LeadDetailsSheet({ lead, open, onOpenChange, onLeadUpdat
                   Regenerate
                 </Button>
               </div>
-              {explanation ? (
-                <p className="text-sm text-slate-700 leading-relaxed">{explanation}</p>
-              ) : (
-                <p className="text-sm text-slate-400 italic">No explanation yet — save the lead or click Regenerate.</p>
-              )}
+              {(() => {
+                // Split AI explanation from Suggested angle for cleaner display
+                const parts = explanation.split(/Suggested angle:/i);
+                const mainText = parts[0].trim();
+                const angle = parts[1] ? parts[1].trim() : null;
+                return (
+                  <>
+                    {mainText ? (
+                      <p className="text-sm text-slate-700 leading-relaxed">{mainText}</p>
+                    ) : (
+                      <p className="text-sm text-slate-400 italic">No explanation yet — save the lead or click Regenerate.</p>
+                    )}
+                    {angle && (
+                      <div className="mt-3 pt-3 border-t border-indigo-100">
+                        <p className="text-xs font-semibold text-indigo-600 uppercase tracking-wide mb-1">Suggested Opening Line</p>
+                        <p className="text-sm text-slate-700 leading-relaxed italic">"{angle}"</p>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
 
             {/* Growth Signals */}
@@ -444,8 +461,17 @@ export default function LeadDetailsSheet({ lead, open, onOpenChange, onLeadUpdat
                     <EmailStatusBadge status={formData.email_status} />
                   </div>
                 </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Phone</Label>
+                  <Input
+                    value={formData.phone || ''}
+                    onChange={(e) => handleChange('phone', e.target.value)}
+                    className="mt-1 h-8"
+                    placeholder="+48 123 456 789"
+                  />
+                </div>
                 <div className="flex items-center gap-2 mt-1">
-                  <p className="text-xs text-slate-400 italic">Email sourced from Apollo import.</p>
+                  <p className="text-xs text-slate-400 italic">Contact details sourced from Apollo import.</p>
                 </div>
               </div>
             </div>
