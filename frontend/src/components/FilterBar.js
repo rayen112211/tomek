@@ -51,6 +51,7 @@ export default function FilterBar({
       country: '',
       industry: '',
       email_status: '',
+      target_group: '',
       incomplete_only: false,
     };
     setLocalFilters(cleared);
@@ -217,7 +218,28 @@ export default function FilterBar({
                   <SelectItem value="all">All</SelectItem>
                   <SelectItem value="verified">Verified</SelectItem>
                   <SelectItem value="unverified">Unverified</SelectItem>
+                  <SelectItem value="guessed">Guessed (to verify)</SelectItem>
                   <SelectItem value="missing">Missing</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Target Group */}
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">ABM Target Group</Label>
+              <Select
+                value={localFilters.target_group || 'all'}
+                onValueChange={(v) => updateLocalFilter('target_group', v === 'all' ? '' : v)}
+              >
+                <SelectTrigger className="h-8 text-sm">
+                  <SelectValue placeholder="All groups" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Groups</SelectItem>
+                  <SelectItem value="Group 1">🚀 Group 1 — Rapid Growth</SelectItem>
+                  <SelectItem value="Group 2">🔄 Group 2 — Transformation</SelectItem>
+                  <SelectItem value="Group 3">📉 Group 3 — Declining</SelectItem>
+                  <SelectItem value="none">Unclassified</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -275,6 +297,23 @@ export default function FilterBar({
             <Badge variant="secondary" className="gap-1 text-xs h-6">
               {filters.industry}
               <X className="w-3 h-3 cursor-pointer" onClick={() => onFiltersChange({ ...filters, industry: '' })} />
+            </Badge>
+          )}
+          {filters.target_group && (
+            <Badge
+              variant="secondary"
+              className={`gap-1 text-xs h-6 ${
+                filters.target_group === 'Group 1' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' :
+                filters.target_group === 'Group 2' ? 'bg-blue-50 text-blue-800 border border-blue-200' :
+                filters.target_group === 'Group 3' ? 'bg-orange-50 text-orange-800 border border-orange-200' :
+                ''
+              }`}
+            >
+              {filters.target_group === 'Group 1' ? '🚀 Rapid Growth' :
+               filters.target_group === 'Group 2' ? '🔄 Transformation' :
+               filters.target_group === 'Group 3' ? '📉 Declining' :
+               filters.target_group}
+              <X className="w-3 h-3 cursor-pointer" onClick={() => onFiltersChange({ ...filters, target_group: '' })} />
             </Badge>
           )}
         </div>

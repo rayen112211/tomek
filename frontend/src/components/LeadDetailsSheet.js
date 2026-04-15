@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ScoreBadge, ScoreBreakdown } from '@/components/ScoreBadge';
-import { ICPBadge, EmailStatusBadge, PipelineStatusBadge, TypedSignalBadge } from '@/components/StatusBadges';
+import { ICPBadge, EmailStatusBadge, PipelineStatusBadge, TypedSignalBadge, TargetGroupBadge } from '@/components/StatusBadges';
 import { updateLead, generateExplanation } from '@/lib/api';
 import {
   Save,
@@ -84,6 +84,14 @@ export default function LeadDetailsSheet({ lead, open, onOpenChange, onLeadUpdat
         notes: formData.notes,
         source: formData.source,
         pipeline_status: formData.pipeline_status,
+        // New ABM fields
+        annual_revenue_pln: formData.annual_revenue_pln,
+        revenue_growth_pct: formData.revenue_growth_pct,
+        revenue_trend: formData.revenue_trend,
+        years_in_market: formData.years_in_market,
+        legal_form: formData.legal_form,
+        company_description: formData.company_description,
+        ownership_structure: formData.ownership_structure,
       };
       const updated = await updateLead(lead.id, fieldsToSend);
       toast.success('Lead updated');
@@ -140,6 +148,15 @@ export default function LeadDetailsSheet({ lead, open, onOpenChange, onLeadUpdat
                   {formData.website?.replace(/^https?:\/\//, '')}
                   <ExternalLink className="w-3 h-3" />
                 </a>
+              )}
+              {/* Target Group Badge */}
+              {formData.target_group && (
+                <div className="mt-1.5">
+                  <TargetGroupBadge group={formData.target_group} size="sm" />
+                  {formData.target_group_reason && (
+                    <p className="text-[10px] text-slate-400 mt-0.5">{formData.target_group_reason}</p>
+                  )}
+                </div>
               )}
             </div>
             <div className="flex flex-col items-end gap-2 ml-3">
@@ -348,6 +365,16 @@ export default function LeadDetailsSheet({ lead, open, onOpenChange, onLeadUpdat
                     className="mt-1 h-8"
                   />
                 </div>
+                {/* Company Description */}
+                <div>
+                  <Label className="text-xs text-muted-foreground">Company Description</Label>
+                  <Textarea
+                    value={formData.company_description || ''}
+                    onChange={(e) => handleChange('company_description', e.target.value)}
+                    className="mt-1 min-h-[60px] text-sm"
+                    placeholder="What does the company do / sell?"
+                  />
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label className="text-xs text-muted-foreground">Country</Label>
@@ -392,6 +419,78 @@ export default function LeadDetailsSheet({ lead, open, onOpenChange, onLeadUpdat
                     />
                   </div>
                 </div>
+
+                {/* Revenue & Growth */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Annual Revenue (PLN)</Label>
+                    <Input
+                      value={formData.annual_revenue_pln || ''}
+                      onChange={(e) => handleChange('annual_revenue_pln', e.target.value)}
+                      className="mt-1 h-8"
+                      placeholder="e.g. PLN 45M"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">YoY Revenue Growth %</Label>
+                    <Input
+                      type="number"
+                      value={formData.revenue_growth_pct ?? ''}
+                      onChange={(e) => handleChange('revenue_growth_pct', e.target.value !== '' ? parseFloat(e.target.value) : null)}
+                      className="mt-1 h-8"
+                      placeholder="e.g. 65 or -12"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Revenue Trend</Label>
+                    <Select
+                      value={formData.revenue_trend || ''}
+                      onValueChange={(v) => handleChange('revenue_trend', v)}
+                    >
+                      <SelectTrigger className="mt-1 h-8">
+                        <SelectValue placeholder="Trend" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="growing">📈 Growing</SelectItem>
+                        <SelectItem value="stable">➡ Stable</SelectItem>
+                        <SelectItem value="declining">📉 Declining</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Years in Market</Label>
+                    <Input
+                      type="number"
+                      value={formData.years_in_market ?? ''}
+                      onChange={(e) => handleChange('years_in_market', e.target.value !== '' ? parseInt(e.target.value) : null)}
+                      className="mt-1 h-8"
+                      placeholder="e.g. 18"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Legal Form</Label>
+                    <Input
+                      value={formData.legal_form || ''}
+                      onChange={(e) => handleChange('legal_form', e.target.value)}
+                      className="mt-1 h-8"
+                      placeholder="Sp. z o.o."
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="text-xs text-muted-foreground">Ownership Structure</Label>
+                  <Input
+                    value={formData.ownership_structure || ''}
+                    onChange={(e) => handleChange('ownership_structure', e.target.value)}
+                    className="mt-1 h-8"
+                    placeholder="Owner-managed, Family business..."
+                  />
+                </div>
+
                 <div>
                   <Label className="text-xs text-muted-foreground">LinkedIn Company URL</Label>
                   <Input

@@ -1,4 +1,4 @@
-﻿from typing import Dict, Tuple, List
+from typing import Dict, Tuple, List
 from normalize import get_employee_count_from_range
 
 # CEE countries get a regional bonus
@@ -24,6 +24,10 @@ def calculate_score(lead: dict, icp_settings: dict) -> Tuple[int, Dict[str, int]
     +1 Direct email available
     +1 Complete company profile
     +1 QMatch bonus (Polish company or founder-led at risk signal stage)
+    +1 Target group classified (bonus for matching ABM group)
+    +1 QMatch Perfect Client bonus (owner + 10+ employees + risk signal)
+
+    Cap at 10.
     """
     breakdown = {}
     reasons = []
@@ -154,6 +158,34 @@ def calculate_score(lead: dict, icp_settings: dict) -> Tuple[int, Dict[str, int]
     breakdown["QMatch_bonus"] = QMatch_bonus
     score += QMatch_bonus
 
+    # ---- Target Group Bonus (+1) — lead classified into a target group ----
+    target_group = lead.get("target_group", "") or ""
+    target_group_bonus = 0
+    if target_group in ("Group 1", "Group 2", "Group 3"):
+        target_group_bonus = 1
+        group_labels = {
+            "Group 1": "Rapid Growth phase — exactly QMatch's sweet spot",
+            "Group 2": "Transformation potential — fits QMatch change mandate",
+            "Group 3": "Declining revenue — urgency for organisational help",
+        }
+        reasons.append(group_labels.get(target_group, f"Matches {target_group}"))
+
+    breakdown["target_group"] = target_group_bonus
+    score += target_group_bonus
+
+    # ---- Revenue Growth Bonus (+1) — super-high growth (>= 50%) ----
+    revenue_growth_pct = lead.get("revenue_growth_pct")
+    growth_bonus = 0
+    if revenue_growth_pct is not None and revenue_growth_pct >= 50:
+        growth_bonus = 1
+        reasons.append(f"+{revenue_growth_pct:.0f}% YoY revenue growth — high-priority scale signal")
+    elif revenue_growth_pct is not None and revenue_growth_pct < 0:
+        growth_bonus = 1
+        reasons.append(f"{revenue_growth_pct:.0f}% revenue decline — turnaround consulting urgency")
+
+    breakdown["revenue_growth"] = growth_bonus
+    score += growth_bonus
+
     # ---- QMatch Perfect Client Bonus (+1) — owner/founder with 10+ employees and risk signal ----
     qmatch_perfect_roles = {"właściciel", "prezes", "founder", "owner", "co-founder", "president"}
     is_owner_role = any(r in lead_role for r in qmatch_perfect_roles)
@@ -180,6 +212,8 @@ def generate_why(lead: dict, score: int, reasons: List[str]) -> str:
     company = lead.get("company_name", "This company")
     role = lead.get("decision_maker_role", "")
     name = lead.get("decision_maker_name", "")
+    target_group = lead.get("target_group", "")
+    revenue_growth = lead.get("revenue_growth_pct")
 
     if score >= 8:
         quality = "a top-priority"
@@ -189,6 +223,14 @@ def generate_why(lead: dict, score: int, reasons: List[str]) -> str:
         quality = "a low-priority"
 
     parts = [f"{company} is {quality} QMatch prospect."]
+
+    if target_group:
+        group_desc = {
+            "Group 1": "🚀 Rapid Growth",
+            "Group 2": "🔄 Transformation",
+            "Group 3": "📉 Declining Revenue",
+        }.get(target_group, target_group)
+        parts.append(f"Target: {group_desc}.")
 
     if reasons:
         top = reasons[:3]

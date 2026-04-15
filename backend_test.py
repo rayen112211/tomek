@@ -5,7 +5,7 @@ import io
 from datetime import datetime
 
 class LeadQualificationEngineAPITester:
-    def __init__(self, base_url="https://lead-vault-9.preview.emergentagent.com"):
+    def __init__(self, base_url="http://localhost:8000"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_run = 0
@@ -18,7 +18,7 @@ class LeadQualificationEngineAPITester:
         headers = {'Content-Type': 'application/json'} if not files else {}
         
         self.tests_run += 1
-        print(f"\n🔍 Testing {name}...")
+        print(f"\n Testing {name}...")
         print(f"   URL: {url}")
         
         try:
@@ -39,13 +39,13 @@ class LeadQualificationEngineAPITester:
             success = response.status_code == expected_status
             if success:
                 self.tests_passed += 1
-                print(f"✅ Passed - Status: {response.status_code}")
+                print(f" Passed - Status: {response.status_code}")
                 try:
                     return True, response.json() if response.content else {}
                 except:
                     return True, {}
             else:
-                print(f"❌ Failed - Expected {expected_status}, got {response.status_code}")
+                print(f" Failed - Expected {expected_status}, got {response.status_code}")
                 try:
                     error_detail = response.json()
                     print(f"   Error: {error_detail}")
@@ -54,7 +54,7 @@ class LeadQualificationEngineAPITester:
                 return False, {}
 
         except Exception as e:
-            print(f"❌ Failed - Error: {str(e)}")
+            print(f" Failed - Error: {str(e)}")
             return False, {}
 
     def test_root_endpoint(self):
@@ -121,7 +121,7 @@ class LeadQualificationEngineAPITester:
     def test_get_single_lead(self):
         """Test getting a single lead"""
         if not self.test_lead_id:
-            print("❌ No test lead ID available")
+            print(" No test lead ID available")
             return False, {}
         
         success, response = self.run_test("Get Single Lead", "GET", f"leads/{self.test_lead_id}", 200)
@@ -134,7 +134,7 @@ class LeadQualificationEngineAPITester:
     def test_update_lead(self):
         """Test updating a lead"""
         if not self.test_lead_id:
-            print("❌ No test lead ID available")
+            print(" No test lead ID available")
             return False, {}
         
         update_data = {
@@ -185,7 +185,7 @@ class LeadQualificationEngineAPITester:
     def test_mock_enrich_email(self):
         """Test mock email enrichment"""
         if not self.test_lead_id:
-            print("❌ No test lead ID available")
+            print(" No test lead ID available")
             return False, {}
         
         success, response = self.run_test("Mock Enrich Email", "POST", f"enrich/email/{self.test_lead_id}", 200)
@@ -198,7 +198,7 @@ class LeadQualificationEngineAPITester:
     def test_mock_verify_email(self):
         """Test mock email verification"""
         if not self.test_lead_id:
-            print("❌ No test lead ID available")
+            print(" No test lead ID available")
             return False, {}
         
         success, response = self.run_test("Mock Verify Email", "POST", f"verify/email/{self.test_lead_id}", 200)
@@ -246,12 +246,12 @@ Sample Inc,https://sample.com,United Kingdom,Financial Services,201-500,Jane Smi
         
         # We'll skip this test since we don't have a create endpoint
         # and don't want to delete real leads
-        print("🔍 Testing Bulk Delete Leads...")
-        print("   ⚠️  Skipped - Would delete real leads")
+        print(" Testing Bulk Delete Leads...")
+        print("     Skipped - Would delete real leads")
         return True, {}
 
 def main():
-    print("🚀 Starting Lead Qualification Engine API Tests")
+    print("Starting Lead Qualification Engine API Tests")
     print("=" * 60)
     
     tester = LeadQualificationEngineAPITester()
@@ -276,24 +276,24 @@ def main():
         tester.test_bulk_delete_leads,
     ]
     
-    print(f"\n📋 Running {len(tests)} API tests...\n")
+    print(f"\n Running {len(tests)} API tests...\n")
     
     for test in tests:
         try:
             test()
         except Exception as e:
-            print(f"❌ Test failed with exception: {str(e)}")
+            print(f" Test failed with exception: {str(e)}")
             tester.tests_run += 1
     
     # Print results
     print("\n" + "=" * 60)
-    print(f"📊 Test Results: {tester.tests_passed}/{tester.tests_run} tests passed")
+    print(f" Test Results: {tester.tests_passed}/{tester.tests_run} tests passed")
     
     if tester.tests_passed == tester.tests_run:
-        print("🎉 All API tests passed!")
+        print(" All API tests passed!")
         return 0
     else:
-        print(f"⚠️  {tester.tests_run - tester.tests_passed} tests failed")
+        print(f"  {tester.tests_run - tester.tests_passed} tests failed")
         return 1
 
 if __name__ == "__main__":

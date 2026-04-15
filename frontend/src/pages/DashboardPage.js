@@ -25,7 +25,7 @@ import {
 import FilterBar from '@/components/FilterBar';
 import LeadDetailsSheet from '@/components/LeadDetailsSheet';
 import { ScoreBadge } from '@/components/ScoreBadge';
-import { ICPBadge, EmailStatusBadge, GrowthSignalBadges, PipelineStatusBadge, TypedSignalBadge } from '@/components/StatusBadges';
+import { ICPBadge, EmailStatusBadge, GrowthSignalBadges, PipelineStatusBadge, TypedSignalBadge, TargetGroupBadge } from '@/components/StatusBadges';
 import { getLeads, getLeadStats, exportLeads, seedData, bulkDeleteLeads, updateLeadStatus } from '@/lib/api';
 import {
   Download,
@@ -85,6 +85,7 @@ export default function DashboardPage() {
     country: '',
     industry: '',
     email_status: '',
+    target_group: '',
     incomplete_only: false,
   });
   const [sortField, setSortField] = useState('score');
@@ -123,6 +124,7 @@ export default function DashboardPage() {
       if (filters.country) params.country = filters.country;
       if (filters.industry) params.industry = filters.industry;
       if (filters.email_status) params.email_status = filters.email_status;
+      if (filters.target_group) params.target_group = filters.target_group;
       if (filters.incomplete_only) params.incomplete_only = true;
 
       const data = await getLeads(params);
@@ -248,6 +250,7 @@ export default function DashboardPage() {
     filters.country,
     filters.industry,
     filters.email_status,
+    filters.target_group,
     filters.incomplete_only,
   ].filter(Boolean).length;
 
@@ -272,7 +275,7 @@ export default function DashboardPage() {
     <div className="p-4 lg:p-6 space-y-4">
       {/* Stats Row */}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">
           <StatCard icon={Building2} label="Total Companies" value={stats.total} />
           <StatCard icon={Target} label="ICP Fit" value={stats.fit} color="text-emerald-600" />
           <StatCard
@@ -294,6 +297,12 @@ export default function DashboardPage() {
             color="text-teal-600"
           />
           <StatCard icon={BarChart3} label="Avg Score" value={stats.avg_score} />
+          <StatCard
+            icon={TrendingUp}
+            label="Grp 1 / 2 / 3"
+            value={`${stats.group1 || 0} / ${stats.group2 || 0} / ${stats.group3 || 0}`}
+            color="text-indigo-600"
+          />
         </div>
       )}
 
@@ -354,7 +363,7 @@ export default function DashboardPage() {
         <div className="overflow-auto">
           <Table data-testid="lead-table">
             <TableHeader>
-              <TableRow className="bg-slate-50/70" data-testid="lead-table-header">
+                          <TableRow className="bg-slate-50/70" data-testid="lead-table-header">
                 <TableHead className="w-[40px] py-2 px-3">
                   <Checkbox
                     checked={leads.length > 0 && selectedIds.size === leads.length}
@@ -363,10 +372,16 @@ export default function DashboardPage() {
                   />
                 </TableHead>
                 <TableHead className="py-2 px-3 text-xs font-semibold tracking-wide text-slate-500 uppercase">
+                  Target Group
+                </TableHead>
+                <TableHead className="py-2 px-3 text-xs font-semibold tracking-wide text-slate-500 uppercase">
                   <SortableHeader field="score">Score</SortableHeader>
                 </TableHead>
                 <TableHead className="py-2 px-3 text-xs font-semibold tracking-wide text-slate-500 uppercase">
                   <SortableHeader field="company_name">Company</SortableHeader>
+                </TableHead>
+                <TableHead className="py-2 px-3 text-xs font-semibold tracking-wide text-slate-500 uppercase">
+                  Revenue
                 </TableHead>
                 <TableHead className="py-2 px-3 text-xs font-semibold tracking-wide text-slate-500 uppercase">
                   Decision Maker
@@ -386,10 +401,10 @@ export default function DashboardPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {loading ? (
+                          {loading ? (
                 Array.from({ length: 8 }).map((_, i) => (
                   <TableRow key={i}>
-                    {Array.from({ length: 8 }).map((_, j) => (
+                    {Array.from({ length: 11 }).map((_, j) => (
                       <TableCell key={j} className="py-2 px-3">
                         <Skeleton className="h-4 w-full" />
                       </TableCell>
@@ -436,7 +451,10 @@ export default function DashboardPage() {
                         'cursor-pointer hover:bg-slate-50 transition-colors group',
                         isSelected && 'bg-indigo-50/60 ring-1 ring-indigo-200',
                         lead.pipeline_status === 'Converted' && 'bg-teal-50/30',
-                        lead.pipeline_status === 'Rejected' && 'opacity-60'
+                        lead.pipeline_status === 'Rejected' && 'opacity-60',
+                        lead.target_group === 'Group 1' && !isSelected && 'border-l-2 border-l-emerald-300',
+                        lead.target_group === 'Group 2' && !isSelected && 'border-l-2 border-l-blue-300',
+                        lead.target_group === 'Group 3' && !isSelected && 'border-l-2 border-l-orange-300',
                       )}
                       data-testid="lead-row"
                     >
@@ -446,6 +464,11 @@ export default function DashboardPage() {
                           checked={isSelected}
                           onCheckedChange={(checked) => handleSelectRow(lead.id, checked)}
                         />
+                      </TableCell>
+
+                      {/* Target Group */}
+                      <TableCell className="py-2 px-3" onClick={() => handleRowClick(lead)}>
+                        <TargetGroupBadge group={lead.target_group} />
                       </TableCell>
 
                       {/* Score */}
@@ -481,6 +504,27 @@ export default function DashboardPage() {
                           <div className="text-xs text-slate-400 truncate max-w-[160px] mt-0.5">
                             {lead.country}{lead.industry ? ` · ${lead.industry}` : ''}
                           </div>
+                        </div>
+                      </TableCell>
+
+                      {/* Revenue */}
+                      <TableCell className="py-2 px-3" onClick={() => handleRowClick(lead)}>
+                        <div className="text-xs">
+                          {lead.annual_revenue_pln ? (
+                            <span className="font-medium text-slate-700">{lead.annual_revenue_pln}</span>
+                          ) : (
+                            <span className="text-slate-300">—</span>
+                          )}
+                          {lead.revenue_growth_pct != null && (
+                            <div className={cn(
+                              'text-[10px] font-medium mt-0.5',
+                              lead.revenue_growth_pct >= 50 ? 'text-emerald-600' :
+                              lead.revenue_growth_pct >= 0 ? 'text-slate-500' :
+                              'text-orange-500'
+                            )}>
+                              {lead.revenue_growth_pct >= 0 ? '+' : ''}{lead.revenue_growth_pct?.toFixed(0)}% YoY
+                            </div>
+                          )}
                         </div>
                       </TableCell>
 

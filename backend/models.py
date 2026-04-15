@@ -29,7 +29,7 @@ class Lead(BaseModel):
     decision_maker_linkedin_url: str = ""
     email: str = ""
     phone: str = ""
-    email_status: str = "unverified"  # verified, unverified, missing
+    email_status: str = "unverified"  # verified, unverified, missing, guessed
     growth_signals: List[str] = Field(default_factory=list)
     typed_signals: List[Dict[str, str]] = Field(default_factory=list)  # [{type, label, icon}]
     icp_fit: str = "Not Fit"  # Fit, Partial Fit, Not Fit
@@ -44,6 +44,19 @@ class Lead(BaseModel):
     dedupe_key: str = ""
     incomplete_flags: List[str] = Field(default_factory=list)
     is_duplicate: bool = False
+
+    # ---- NEW ABM / QMatch Spec Fields ----
+    annual_revenue_pln: str = ""          # e.g. "PLN 45M" or "40000000"
+    revenue_growth_pct: Optional[float] = None   # YoY growth % — positive or negative
+    revenue_trend: str = ""              # "growing" | "stable" | "declining"
+    years_in_market: Optional[int] = None        # Company age in years
+    legal_form: str = ""                 # e.g. "Sp. z o.o."
+    company_description: str = ""        # Short business description (what they do/sell)
+    ownership_structure: str = ""        # "Owner-managed", "Family business", etc.
+    target_group: str = ""               # "Group 1", "Group 2", "Group 3", ""
+    target_group_reason: str = ""        # Short explanation why classified into this group
+    # ---- End new fields ----
+
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
@@ -65,6 +78,14 @@ class LeadCreate(BaseModel):
     notes: str = ""
     source: str = ""
     pipeline_status: str = "New"
+    # New fields
+    annual_revenue_pln: str = ""
+    revenue_growth_pct: Optional[float] = None
+    revenue_trend: str = ""
+    years_in_market: Optional[int] = None
+    legal_form: str = ""
+    company_description: str = ""
+    ownership_structure: str = ""
 
 
 class LeadUpdate(BaseModel):
@@ -84,6 +105,14 @@ class LeadUpdate(BaseModel):
     notes: Optional[str] = None
     source: Optional[str] = None
     pipeline_status: Optional[str] = None
+    # New fields
+    annual_revenue_pln: Optional[str] = None
+    revenue_growth_pct: Optional[float] = None
+    revenue_trend: Optional[str] = None
+    years_in_market: Optional[int] = None
+    legal_form: Optional[str] = None
+    company_description: Optional[str] = None
+    ownership_structure: Optional[str] = None
 
 
 class ICPSettings(BaseModel):

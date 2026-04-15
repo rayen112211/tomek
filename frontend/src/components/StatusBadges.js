@@ -150,3 +150,44 @@ export function TypedSignalBadge({ signal }) {
     </Badge>
   );
 }
+
+// Target Group badge — maps to the 3 QMatch ABM groups from the spec
+export function TargetGroupBadge({ group, size = 'sm' }) {
+  const config = {
+    'Group 1': {
+      className: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+      label: '🚀 Rapid Growth',
+      dot: 'bg-emerald-500',
+    },
+    'Group 2': {
+      className: 'bg-blue-50 text-blue-800 border-blue-200',
+      label: '🔄 Transformation',
+      dot: 'bg-blue-500',
+    },
+    'Group 3': {
+      className: 'bg-orange-50 text-orange-800 border-orange-200',
+      label: '📉 Declining',
+      dot: 'bg-orange-400',
+    },
+  };
+
+  if (!group || !config[group]) {
+    return null;
+  }
+
+  const cfg = config[group];
+
+  return (
+    <Badge
+      variant="outline"
+      className={cn(
+        'inline-flex items-center gap-1 font-medium whitespace-nowrap',
+        size === 'sm' ? 'text-xs px-2 py-0.5' : 'text-sm px-2.5 py-1',
+        cfg.className
+      )}
+    >
+      {cfg.label}
+    </Badge>
+  );
+}
+

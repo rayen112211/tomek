@@ -1,4 +1,4 @@
-﻿from fastapi import FastAPI, APIRouter, UploadFile, File, Form, Query, HTTPException
+from fastapi import FastAPI, APIRouter, UploadFile, File, Form, Query, HTTPException
 from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -22,6 +22,7 @@ from scoring import calculate_score
 from signal_detection import detect_signals, signals_to_legacy_list
 from ai_explanation import generate_ai_explanation, generate_template_explanation
 from mock_data import get_mock_leads
+from target_groups import classify_target_group
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -80,6 +81,11 @@ async def process_and_score_lead(lead_dict: dict, skip_ai: bool = False) -> dict
     typed_signals = detect_signals(lead_dict)
     lead_dict["typed_signals"] = typed_signals
     lead_dict["growth_signals"] = signals_to_legacy_list(typed_signals)
+
+    # Classify target group (Group 1 / 2 / 3)
+    target_group, target_group_reason = classify_target_group(lead_dict)
+    lead_dict["target_group"] = target_group
+    lead_dict["target_group_reason"] = target_group_reason
 
     # Check ICP fit
     icp_fit, icp_explanation = check_icp_fit(lead_dict, icp_settings)
@@ -401,6 +407,7 @@ async def get_leads(
     country: Optional[str] = Query(None),
     industry: Optional[str] = Query(None),
     email_status: Optional[str] = Query(None),
+    target_group: Optional[str] = Query(None),
     incomplete_only: Optional[bool] = Query(None),
     sort_field: Optional[str] = Query("score"),
     sort_order: Optional[str] = Query("desc"),
@@ -443,6 +450,11 @@ async def get_leads(
         query["industry"] = industry
     if email_status:
         query["email_status"] = email_status
+    if target_group:
+        if target_group == "none":
+            query["$or"] = [{"target_group": ""}, {"target_group": None}, {"target_group": {"$exists": False}}]
+        else:
+            query["target_group"] = target_group
     if incomplete_only:
         query["incomplete_flags"] = {"$ne": []}
 
@@ -510,6 +522,11 @@ async def get_lead_stats():
     verified_emails = await db.leads.count_documents({"email_status": "verified"})
     missing_emails = await db.leads.count_documents({"email_status": "missing"})
 
+    # Target group counts (ABM groups)
+    group1_count = await db.leads.count_documents({"target_group": "Group 1"})
+    group2_count = await db.leads.count_documents({"target_group": "Group 2"})
+    group3_count = await db.leads.count_documents({"target_group": "Group 3"})
+
     return {
         "total": total,
         "fit": fit_count,
@@ -519,6 +536,9 @@ async def get_lead_stats():
         "avg_score": avg_score,
         "verified_emails": verified_emails,
         "missing_emails": missing_emails,
+        "group1": group1_count,
+        "group2": group2_count,
+        "group3": group3_count,
         "pipeline": pipeline_counts,
         "score_distribution": [{"score": s["_id"], "count": s["count"]} for s in score_dist],
     }
@@ -638,8 +658,11 @@ async def export_leads(
 
     csv_columns = [
         "company_name", "website", "country", "industry", "employee_range",
+        "annual_revenue_pln", "revenue_growth_pct", "revenue_trend", "years_in_market",
+        "legal_form", "company_description", "ownership_structure",
         "linkedin_company_url", "decision_maker_name", "decision_maker_role",
         "decision_maker_linkedin_url", "email", "phone", "email_status",
+        "target_group", "target_group_reason",
         "icp_fit", "score", "pipeline_status", "ai_explanation", "suggested_angle",
         "why_this_lead", "growth_signals", "notes", "source"
     ]
@@ -770,28 +793,78 @@ async def weekly_digest():
 
 @api_router.post("/enrich/email/{lead_id}")
 async def mock_enrich_email(lead_id: str):
-    """Placeholder for email enrichment."""
+    """
+    Email enrichment using 3-method approach (per QMatch ABM spec):
+    1. Check if email already exists (lookup)
+    2. Try Polish email pattern guessing if no email found
+    3. Mark as 'guessed' status for manual verification
+
+    Polish email patterns (most common first):
+    - first_initial + last_name (e.g. jkowalski@firma.pl)
+    - firstname.lastname
+    - lastname.firstname
+    - firstname
+    """
     lead = await db.leads.find_one({"id": lead_id}, {"_id": 0})
     if not lead:
         raise HTTPException(status_code=404, detail="Lead not found")
 
+    if lead.get("email") and lead.get("email_status") == "verified":
+        return {"message": "Verified email already exists", "email": lead["email"], "status": "verified", "candidates": []}
+
     if not lead.get("email"):
         domain = extract_domain(lead.get("website", ""))
-        name = lead.get("decision_maker_name", "").lower().split()
-        if domain and name:
-            mock_email = f"{name[0]}@{domain}"
-            await db.leads.update_one(
-                {"id": lead_id},
-                {"$set": {"email": mock_email, "email_status": "unverified", "updated_at": datetime.now(timezone.utc).isoformat()}}
-            )
-            updated = await db.leads.find_one({"id": lead_id}, {"_id": 0})
-            processed = await process_and_score_lead(updated)
-            await db.leads.update_one({"id": lead_id}, {"$set": processed})
+        full_name = lead.get("decision_maker_name", "").strip()
 
-            return {"message": f"Mock email enriched: {mock_email}", "email": mock_email, "status": "unverified"}
-        return {"message": "Could not generate mock email", "email": "", "status": "missing"}
+        if domain and full_name:
+            name_parts = full_name.lower().split()
+            # Normalize Polish characters for email
+            import unicodedata
+            def normalize_name(s):
+                return unicodedata.normalize('NFD', s).encode('ascii', 'ignore').decode('ascii')
+            name_parts = [normalize_name(p) for p in name_parts]
 
-    return {"message": "Email already exists", "email": lead["email"], "status": lead.get("email_status", "unverified")}
+            candidates = []
+            if len(name_parts) >= 2:
+                first = name_parts[0]
+                last = name_parts[-1]
+                # Method 3a: Polish standard — first initial + last name
+                candidates.append(f"{first[0]}{last}@{domain}")
+                # Method 3b: firstname.lastname
+                candidates.append(f"{first}.{last}@{domain}")
+                # Method 3c: lastname.firstname
+                candidates.append(f"{last}.{first}@{domain}")
+                # Method 3d: firstname only
+                candidates.append(f"{first}@{domain}")
+                # Method 3e: last name only
+                candidates.append(f"{last}@{domain}")
+            elif len(name_parts) == 1:
+                candidates.append(f"{name_parts[0]}@{domain}")
+
+            if candidates:
+                best_guess = candidates[0]  # Polish standard (jkowalski@) is most common
+                await db.leads.update_one(
+                    {"id": lead_id},
+                    {"$set": {
+                        "email": best_guess,
+                        "email_status": "guessed",
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+                updated = await db.leads.find_one({"id": lead_id}, {"_id": 0})
+                processed = await process_and_score_lead(updated)
+                await db.leads.update_one({"id": lead_id}, {"$set": processed})
+
+                return {
+                    "message": f"Email pattern guessed (Polish standard): {best_guess}",
+                    "email": best_guess,
+                    "status": "guessed",
+                    "candidates": candidates,
+                    "note": "Guessed using Polish email patterns. Verify before sending."
+                }
+        return {"message": "Could not generate email — no domain or name available", "email": "", "status": "missing", "candidates": []}
+
+    return {"message": "Email already exists (unverified)", "email": lead["email"], "status": lead.get("email_status", "unverified"), "candidates": []}
 
 
 @api_router.post("/verify/email/{lead_id}")
