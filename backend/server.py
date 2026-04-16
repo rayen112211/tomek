@@ -167,7 +167,7 @@ async def preview_csv(file: UploadFile = File(...)):
         }
         # Build a reverse lookup: internal_field -> csv_col from Apollo exact matches
         # For phone: prefer Corporate Phone > Work Direct Phone > Mobile Phone
-        PHONE_PRIORITY = ["Work Direct Phone", "Corporate Phone", "Mobile Phone"]
+        PHONE_PRIORITY = ["Corporate Phone", "Work Direct Phone", "Mobile Phone"]
         apollo_reverse = {}
         for col in columns:
             if col in apollo_exact:
@@ -299,7 +299,7 @@ async def commit_import(
             field_map[csv_col] = internal
 
         # Apollo phone priority: Work Direct Phone > Corporate Phone > Mobile Phone
-        PHONE_PRIORITY_ORDER = ["Work Direct Phone", "Corporate Phone", "Mobile Phone"]
+        PHONE_PRIORITY_ORDER = ["Corporate Phone", "Work Direct Phone", "Mobile Phone"]
         # Sort phone_cols by priority, unknowns go at the end
         phone_cols.sort(key=lambda c: PHONE_PRIORITY_ORDER.index(c) if c in PHONE_PRIORITY_ORDER else 99)
 

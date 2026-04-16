@@ -139,17 +139,19 @@ def generate_template_explanation(lead: dict) -> str:
     parts = []
 
     # Opener based on industry + size
-    desc_suffix = f" — {company_description}" if company_description else ""
     if industry and country:
-        parts.append(f"{company} is a {industry.lower()} business in {country}{desc_suffix}")
+        parts.append(f"{company} is a {industry.lower()} business in {country}")
     elif industry:
-        parts.append(f"{company} operates in {industry.lower()}{desc_suffix}")
+        parts.append(f"{company} operates in {industry.lower()}")
     else:
-        parts.append(f"{company}{desc_suffix}")
+        parts.append(f"{company}")
 
     if emp_range:
         parts[0] += f" with {emp_range} employees"
     parts[0] += "."
+
+    if company_description:
+        parts.append(f"{company_description}")
 
     # Group-specific messaging
     if target_group == "Group 1":

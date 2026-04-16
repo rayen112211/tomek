@@ -44,6 +44,8 @@ export function ScoreBreakdown({ breakdown = {} }) {
     completeness: { label: 'Profile Completeness', max: 1 },
     QMatch_bonus: { label: 'QMatch regional bonus', max: 1 },
     qmatch_perfect: { label: 'QMatch Perfect Client Bonus', max: 1 },
+    target_group: { label: 'ABM target group match', max: 1 },
+    revenue_growth: { label: 'Revenue growth signal', max: 1 },
   };
 
   return (
